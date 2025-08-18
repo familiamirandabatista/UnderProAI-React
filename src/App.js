@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+// A principal mudança está aqui: Usamos HashRouter para compatibilidade com GitHub Pages
+import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -162,7 +163,7 @@ function Header() {
 
     const scrollToSection = (sectionId) => {
         if (location.pathname !== '/') {
-            navigate('/');
+            navigate('/#'); // Navega para a raiz do HashRouter
         }
         setTimeout(() => {
             const section = document.getElementById(sectionId);
@@ -184,9 +185,9 @@ function Header() {
     return (
         <header id="main-header">
             <div className="container">
-                <a href="/" onClick={handleHomeClick}>
-                    <img src="/images/logo.png" alt="UnderPro AI Logo" className="logo" />
-                </a>
+                <Link to="/">
+                    <img src={process.env.PUBLIC_URL + '/images/logo.png'} alt="UnderPro AI Logo" className="logo" />
+                </Link>
                 <nav id="main-nav">
                     <ul id="nav-links">
                         {user ? (
@@ -198,8 +199,8 @@ function Header() {
                             </>
                         ) : (
                             <>
-                                <li><a href="/" onClick={handleHomeClick} className="nav-link-icon"><FaHome /> Home</a></li>
-                                <li><a href="#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
+                                <li><Link to="/" className="nav-link-icon"><FaHome /> Home</Link></li>
+                                <li><a href="/#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
                                 <li><Link to="/historico" className="nav-link-icon"><FaHistory /> Histórico</Link></li>
                                 <li><Link to="/sinais-gratuitos" className="nav-link-icon"><FaBroadcastTower /> Sinais Gratuitos</Link></li>
                                 <li>
@@ -220,7 +221,7 @@ function Header() {
 
 function Footer() {
     const footerBgStyle = {
-        backgroundImage: `url('/images/fundo-palavras.PNG')`
+        backgroundImage: `url('${process.env.PUBLIC_URL}/images/fundo-palavras.PNG')`
     };
 
     return (
@@ -239,7 +240,7 @@ function Layout({ children }) {
     const isAuthPage = authPaths.includes(location.pathname);
 
     useEffect(() => {
-        document.body.style.backgroundImage = `linear-gradient(rgba(18, 18, 18, 0.97), rgba(18, 18, 18, 0.97)), url('/images/fundo-geometrico.png')`;
+        document.body.style.backgroundImage = `linear-gradient(rgba(18, 18, 18, 0.97), rgba(18, 18, 18, 0.97)), url('${process.env.PUBLIC_URL}/images/fundo-geometrico.png')`;
         document.body.style.backgroundAttachment = 'fixed';
         
         const handleScroll = () => {
@@ -272,7 +273,7 @@ function Layout({ children }) {
 
 function HomePage() {
     const heroStyle = {
-        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 1)), url('/images/hero-background.png')`
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 1)), url('${process.env.PUBLIC_URL}/images/hero-background.png')`
     };
 
     return (
@@ -337,14 +338,14 @@ function HomePage() {
                         <div className="testimonial-card">
                             <p>"Finalmente uma plataforma que trata apostas como investimento. A transparência e as ferramentas de gestão mudaram meu jogo completamente."</p>
                             <div className="testimonial-author">
-                                <img src="/images/foto-homem.png" alt="Foto de João P." />
+                                <img src={process.env.PUBLIC_URL + '/images/foto-homem.png'} alt="Foto de João P." />
                                 <div><h4>João P.</h4><span>Membro Premium</span></div>
                             </div>
                         </div>
                         <div className="testimonial-card">
                             <p>"Eu era cética no início, mas os resultados falam por si. A análise de dados da UnderPro AI é de outro nível. Recomendo fortemente."</p>
                             <div className="testimonial-author">
-                                <img src="/images/foto-mulher.png" alt="Foto de Maria R." />
+                                <img src={process.env.PUBLIC_URL + '/images/foto-mulher.png'} alt="Foto de Maria R." />
                                 <div><h4>Maria R.</h4><span>Membro Premium</span></div>
                             </div>
                         </div>
@@ -503,7 +504,8 @@ function FreeSignalsPage() {
     useEffect(() => {
         const loadTips = async () => {
             try {
-                const response = await fetch('/dicas-da-semana.txt');
+                // CORREÇÃO: Usando process.env.PUBLIC_URL para o caminho do arquivo
+                const response = await fetch(process.env.PUBLIC_URL + '/dicas-da-semana.txt');
                 if (!response.ok) throw new Error('Arquivo de dicas não encontrado.');
                 const textData = await response.text();
                 
@@ -594,7 +596,8 @@ function DashboardPage() {
 
         const loadData = async () => {
             try {
-                const response = await fetch('/banco-de-dados.txt');
+                // CORREÇÃO: Usando process.env.PUBLIC_URL para o caminho do arquivo
+                const response = await fetch(process.env.PUBLIC_URL + '/banco-de-dados.txt');
                 if (!response.ok) throw new Error('Falha ao carregar banco de dados.');
                 const textData = await response.text();
                 const processedData = parseData(textData);
@@ -708,7 +711,6 @@ function DashboardPage() {
     );
 }
 
-// CORREÇÃO: Função HistoricoPage atualizada para corrigir o carregamento do gráfico
 function HistoricoPage() {
     const [allData, setAllData] = useState([]);
     const [chartData, setChartData] = useState(null);
@@ -718,7 +720,6 @@ function HistoricoPage() {
     useEffect(() => {
         const parseData = (text) => {
             const data = [];
-            // 1. Limpa o texto, removendo cabeçalhos e rodapés de relatórios
             const cleanedText = text.replace(/--- RELATÓRIO COMPLETO DE BACKTEST V18.18 ---/g, '')
                                      .replace(/RODADAS ANALISADAS: \d+ a \d+/g, '')
                                      .replace(/-------------------------------------------/g, '')
@@ -727,7 +728,6 @@ function HistoricoPage() {
                                      .replace(/Total de Reds: \d+/g, '')
                                      .replace(/Assertividade: \d+\.\d+%?/g, '');
 
-            // 2. Divide o texto em blocos de jogos. Cada jogo começa com [R_]
             const gameBlocks = cleanedText.split(/\[R\d+\]/).filter(block => block.trim() !== '');
 
             gameBlocks.forEach((block, index) => {
@@ -747,7 +747,6 @@ function HistoricoPage() {
                 const resultLine = lines.find(l => l.startsWith('RESULTADO:'));
                 const result = resultLine ? (resultLine.includes('Green') ? 'Green' : 'Red') : 'N/A';
 
-                // 3. Lógica de "melhor palpite" para a data
                 const dateMatches = block.match(/(\d{4}-\d{2}-\d{2}):/g);
                 let bestGuessDate = null;
                 if (dateMatches) {
@@ -766,13 +765,13 @@ function HistoricoPage() {
                     });
                 }
             });
-            // 4. Ordena os dados pela data para garantir a cronologia
             return data.sort((a, b) => a.date - b.date);
         };
 
         const loadData = async () => {
             try {
-                const response = await fetch('/banco-de-dados.txt');
+                // CORREÇÃO: Usando process.env.PUBLIC_URL para o caminho do arquivo
+                const response = await fetch(process.env.PUBLIC_URL + '/banco-de-dados.txt');
                 if (!response.ok) throw new Error('Falha ao carregar banco de dados.');
                 const textData = await response.text();
                 const processedData = parseData(textData);
