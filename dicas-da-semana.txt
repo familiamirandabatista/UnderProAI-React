@@ -1,0 +1,45 @@
+--- DICAS E ANÁLISES PARA A PRÓXIMA RODADA (V18.18) ---
+
+==================================================
+🎯 PARTIDA: Grêmio vs Ceará
+--------------------------------------------------
+🔍 PERFIL ENCONTRADO: "Duelo Equilibrado"
+
+📝 RESUMO DA ANÁLISE:
+   A partida se encaixa no perfil "Duelo Equilibrado", indicando uma forte tendência para um jogo com poucos gols. A estratégia sugere valor no mercado de Menos de 3.5 Gols.
+
+📊 MÉTRICAS CHAVE:
+   - Expectativa de Gols (xG Total): 1.92. (Baixa expectativa de chances claras de gol).
+   - Potencial Ofensivo Combinado (PO): 2.56. (Ataques contidos).
+   - Média de Gols Sofridos Combinada (MGS): 2.20. (Defesas sólidas).
+   - Tendência Geral de Gols (APIA): 1.90.
+
+💡 PONTO DE ATENÇÃO:
+   As forças das equipes são muito parecidas, tanto em defesa quanto em ataque. A baixa "inconstância" (Desvio Padrão) sugere um placar dentro do esperado.
+==================================================
+
+
+
+
+
+
+--- DICAS E ANÁLISES PARA A PRÓXIMA RODADA (V18.18) ---
+
+==================================================
+🎯 PARTIDA: Flamengo vs Fluminense
+--------------------------------------------------
+🔍 PERFIL ENCONTRADO: "Duelo Equilibrado"
+
+📝 RESUMO DA ANÁLISE:
+   A partida se encaixa no perfil "Duelo Equilibrado", indicando uma forte tendência para um jogo com poucos gols. A estratégia sugere valor no mercado de Menos de 3.5 Gols.
+
+📊 MÉTRICAS CHAVE:
+   - Expectativa de Gols (xG Total): 1.92. (Baixa expectativa de chances claras de gol).
+   - Potencial Ofensivo Combinado (PO): 2.56. (Ataques contidos).
+   - Média de Gols Sofridos Combinada (MGS): 2.20. (Defesas sólidas).
+   - Tendência Geral de Gols (APIA): 1.90.
+
+💡 PONTO DE ATENÇÃO:
+   As forças das equipes são muito parecidas, tanto em defesa quanto em ataque. A baixa "inconstância" (Desvio Padrão) sugere um placar dentro do esperado.
+==================================================
+
