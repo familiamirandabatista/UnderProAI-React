@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/UnderProAI-React/static/css/main.e09448d3.css",
-    "main.js": "/UnderProAI-React/static/js/main.5efd317a.js",
+    "main.js": "/UnderProAI-React/static/js/main.70a43de4.js",
     "static/js/453.cda1f1ed.chunk.js": "/UnderProAI-React/static/js/453.cda1f1ed.chunk.js",
     "index.html": "/UnderProAI-React/index.html",
     "main.e09448d3.css.map": "/UnderProAI-React/static/css/main.e09448d3.css.map",
-    "main.5efd317a.js.map": "/UnderProAI-React/static/js/main.5efd317a.js.map",
+    "main.70a43de4.js.map": "/UnderProAI-React/static/js/main.70a43de4.js.map",
     "453.cda1f1ed.chunk.js.map": "/UnderProAI-React/static/js/453.cda1f1ed.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e09448d3.css",
-    "static/js/main.5efd317a.js"
+    "static/js/main.70a43de4.js"
   ]
 }
