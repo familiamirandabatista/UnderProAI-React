@@ -716,11 +716,19 @@ function HistoricoPage() {
     const [currentYear, setCurrentYear] = useState('all');
 
     useEffect(() => {
-        // Função de parsing de dados mais robusta
         const parseData = (text) => {
             const data = [];
-            // Divide o texto em blocos de jogos. Cada jogo começa com [R_]
-            const gameBlocks = text.split(/\[R\d+\]/).filter(block => block.trim() !== '');
+            // 1. Limpa o texto, removendo cabeçalhos e rodapés de relatórios
+            const cleanedText = text.replace(/--- RELATÓRIO COMPLETO DE BACKTEST V18.18 ---/g, '')
+                                     .replace(/RODADAS ANALISADAS: \d+ a \d+/g, '')
+                                     .replace(/-------------------------------------------/g, '')
+                                     .replace(/Total de Entradas \(Aptas\): \d+/g, '')
+                                     .replace(/Total de Greens: \d+/g, '')
+                                     .replace(/Total de Reds: \d+/g, '')
+                                     .replace(/Assertividade: \d+\.\d+%?/g, '');
+
+            // 2. Divide o texto em blocos de jogos. Cada jogo começa com [R_]
+            const gameBlocks = cleanedText.split(/\[R\d+\]/).filter(block => block.trim() !== '');
 
             gameBlocks.forEach((block, index) => {
                 const lines = block.trim().split('\n').map(line => line.trim());
@@ -739,7 +747,7 @@ function HistoricoPage() {
                 const resultLine = lines.find(l => l.startsWith('RESULTADO:'));
                 const result = resultLine ? (resultLine.includes('Green') ? 'Green' : 'Red') : 'N/A';
 
-                // Lógica de "melhor palpite" para a data, já que não há data explícita por jogo
+                // 3. Lógica de "melhor palpite" para a data
                 const dateMatches = block.match(/(\d{4}-\d{2}-\d{2}):/g);
                 let bestGuessDate = null;
                 if (dateMatches) {
@@ -747,7 +755,7 @@ function HistoricoPage() {
                     bestGuessDate = new Date(Math.max.apply(null, dates));
                 }
 
-                if (result !== 'N/A' && bestGuessDate) {
+                if (result !== 'N/A' && bestGuessDate && !isNaN(bestGuessDate)) {
                      data.push({
                         index: index,
                         date: bestGuessDate,
@@ -758,7 +766,7 @@ function HistoricoPage() {
                     });
                 }
             });
-            // Ordena os dados pela data aproximada para garantir a cronologia
+            // 4. Ordena os dados pela data para garantir a cronologia
             return data.sort((a, b) => a.date - b.date);
         };
 
@@ -769,7 +777,6 @@ function HistoricoPage() {
                 const textData = await response.text();
                 const processedData = parseData(textData);
                 setAllData(processedData);
-                // Extrai anos únicos e ordena
                 const uniqueYears = [...new Set(processedData.map(d => d.date.getFullYear()))].sort((a, b) => a - b);
                 setYears(uniqueYears);
             } catch (error) {
@@ -787,7 +794,7 @@ function HistoricoPage() {
             : allData.filter(d => d.date.getFullYear().toString() === currentYear);
 
         if (dataToProcess.length === 0) {
-            setChartData(null); // Limpa o gráfico se não houver dados para o ano
+            setChartData(null);
             return;
         }
 
