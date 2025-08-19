@@ -1,4 +1,6 @@
-import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory, FaUserCircle, FaPencilAlt, FaCopy, FaSearch, FaChevronDown } from 'react-icons/fa';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import Hammer from 'hammerjs';
+import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory, FaUserCircle, FaPencilAlt, FaCopy, FaSearch, FaChevronDown, FaBars, FaTimes } from 'react-icons/fa';
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
@@ -52,7 +54,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  zoomPlugin
 );
 
 // --- FUNÇÃO DE ROLAGEM SUAVE COM ACELERAÇÃO ---
@@ -95,12 +98,26 @@ const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
             if (currentUser) {
+                // LÓGICA CENTRALIZADA AQUI
                 const userDocRef = doc(db, "users", currentUser.uid);
                 const docSnap = await getDoc(userDocRef);
+                
                 if (docSnap.exists()) {
+                    // Se o perfil já existe, apenas o carrega
                     setUserProfile(docSnap.data());
+                } else {
+                    // Se o perfil NÃO existe (primeiro login com Google, por ex.), CRIA AGORA
+                    const newProfile = {
+                        displayName: currentUser.displayName || 'Novo Utilizador',
+                        email: currentUser.email,
+                        photoURL: currentUser.photoURL || process.env.PUBLIC_URL + '/images/perfil.png',
+                        isVip: false,
+                        phone: '',
+                        address: ''
+                    };
+                    await setDoc(userDocRef, newProfile);
+                    setUserProfile(newProfile); // Define o perfil recém-criado
                 }
-                // LÓGICA DE CRIAÇÃO DE PERFIL REMOVIDA DAQUI
             } else {
                 setUserProfile(null);
             }
@@ -112,6 +129,7 @@ const AuthProvider = ({ children }) => {
     const value = { user, userProfile, loading, setUserProfile };
     return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
+
 const useAuth = () => React.useContext(AuthContext);
 
 // --- COMPONENTES DE ROTA PROTEGIDA ---
@@ -152,6 +170,9 @@ function Header() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // --- ADICIONADO: Estado para controlar o menu mobile ---
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const handleLogout = async () => {
         try {
             await signOut(auth);
@@ -181,6 +202,16 @@ function Header() {
             navigate('/');
         }
     };
+    
+    // --- ADICIONADO: Função para fechar o menu ao clicar num link ---
+    const handleLinkClick = () => {
+        setIsMenuOpen(false);
+    };
+    
+    // Fecha o menu se a localização mudar
+    useEffect(() => {
+        handleLinkClick();
+    }, [location]);
 
     return (
         <header id="main-header">
@@ -188,19 +219,27 @@ function Header() {
                 <a href="/#" onClick={handleHomeClick}>
                     <img src={process.env.PUBLIC_URL + '/images/logo.png'} alt="UnderPro AI Logo" className="logo" />
                 </a>
-                <nav id="main-nav">
+
+                {/* --- ADICIONADO: Botão do Menu Hambúrguer --- */}
+                <button className="mobile-nav-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                    {isMenuOpen ? <FaTimes /> : <FaBars />}
+                </button>
+
+                {/* --- MODIFICADO: Adicionada a classe 'active' condicionalmente --- */}
+                <nav id="main-nav" className={isMenuOpen ? 'active' : ''}>
                     <ul id="nav-links">
-                        <li><a href="/#" onClick={handleHomeClick} className="nav-link-icon"><FaHome /> Home</a></li>
-                        <li><a href="/#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
-                        <li><Link to="/dashboard" className="nav-link-icon"><FaHistory /> Histórico</Link></li>
-                        <li><Link to="/sinais-gratuitos" className="nav-link-icon"><FaBroadcastTower /> Sinais Gratuitos</Link></li>
+                        {/* --- MODIFICADO: Adicionado onClick a todos os links --- */}
+                        <li><a href="/#" onClick={(e) => { handleHomeClick(e); handleLinkClick(); }} className="nav-link-icon"><FaHome /> Home</a></li>
+                        <li><a href="/#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); handleLinkClick(); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
+                        <li><Link to="/dashboard" onClick={handleLinkClick} className="nav-link-icon"><FaHistory /> Histórico</Link></li>
+                        <li><Link to="/sinais-gratuitos" onClick={handleLinkClick} className="nav-link-icon"><FaBroadcastTower /> Sinais Gratuitos</Link></li>
                         
                         {userProfile?.isVip && (
-                             <li><Link to="/gestao-de-banca" className="nav-link-icon"><FaChartLine /> Gestão de Banca</Link></li>
+                             <li><Link to="/gestao-de-banca" onClick={handleLinkClick} className="nav-link-icon"><FaChartLine /> Gestão de Banca</Link></li>
                         )}
 
                         <li>
-                            <Link to="/sinais-vip" className="vip-link">
+                            <Link to="/sinais-vip" onClick={handleLinkClick} className="vip-link">
                                 <FaCrown className="crown-icon" />
                                 Sinais VIP
                             </Link>
@@ -208,8 +247,7 @@ function Header() {
                         {user && userProfile ? (
                             <>
                                 <li>
-                                    <Link to="/perfil" className="user-profile-widget">
-                                        {/* IMAGEM PADRÃO ALTERADA AQUI */}
+                                    <Link to="/perfil" onClick={handleLinkClick} className="user-profile-widget">
                                         <img src={userProfile?.photoURL || process.env.PUBLIC_URL + '/images/perfil.png'} alt="Perfil" className="header-profile-pic" />
                                         <div className="user-info-header">
                                             <span>{userProfile.displayName}</span>
@@ -219,10 +257,10 @@ function Header() {
                                         </div>
                                     </Link>
                                 </li>
-                                <li><button onClick={handleLogout} className="btn btn-logout">Sair</button></li>
+                                <li><button onClick={() => { handleLogout(); handleLinkClick(); }} className="btn btn-logout">Sair</button></li>
                             </>
                         ) : (
-                            <li><Link to="/login" className="btn btn-primary">Entrar</Link></li>
+                            <li><Link to="/login" onClick={handleLinkClick} className="btn btn-primary">Entrar</Link></li>
                         )}
                     </ul>
                 </nav>
@@ -437,62 +475,40 @@ function HomePage() {
     );
 }
 function LoginPage() {
+    const { user, loading } = useAuth(); // Usamos o estado global de autenticação
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isProcessingRedirect, setIsProcessingRedirect] = useState(true); // Novo estado de carregamento
 
+    // Efeito que processa o retorno do Google, mas não faz mais nada
     useEffect(() => {
-        const handleRedirectResult = async () => {
-            try {
-                const result = await getRedirectResult(auth);
-                if (result) {
-                    // Usuário logado com sucesso via Google
-                    const user = result.user;
-                    const userDocRef = doc(db, "users", user.uid);
-                    const docSnap = await getDoc(userDocRef);
+        getRedirectResult(auth).catch((error) => {
+            console.error("Erro no redirecionamento do Google:", error);
+            setError("Falha ao fazer login com o Google. Tente novamente.");
+        });
+    }, []);
 
-                    // Se o documento do usuário NÃO existir, cria um agora mesmo
-                    if (!docSnap.exists()) {
-                        const newProfile = {
-                            displayName: user.displayName || 'Novo Utilizador',
-                            email: user.email,
-                            photoURL: user.photoURL || process.env.PUBLIC_URL + '/images/perfil.png',
-                            isVip: false,
-                            phone: '',
-                            address: ''
-                        };
-                        await setDoc(userDocRef, newProfile);
-                    }
-                    // Agora que garantimos que o perfil existe, podemos navegar
-                    navigate('/dashboard');
-                } else {
-                    // Não há resultado de redirecionamento, encerra o carregamento
-                    setIsProcessingRedirect(false);
-                }
-            } catch (error) {
-                console.error("Erro no redirecionamento do Google:", error);
-                setError("Falha ao fazer login com o Google. Tente novamente.");
-                setIsProcessingRedirect(false);
-            }
-        };
-
-        handleRedirectResult();
-    }, [navigate]);
+    // Efeito que redireciona o usuário DEPOIS que o AuthProvider confirmar o login
+    useEffect(() => {
+        if (!loading && user) {
+            navigate('/dashboard', { replace: true }); // Usamos replace para não voltar para o login
+        }
+    }, [user, loading, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            navigate('/dashboard');
+            // A navegação agora é tratada pelo useEffect acima
         } catch (err) {
             setError("E-mail ou senha incorretos.");
         }
     };
     
     const handleGoogleLogin = async () => {
+        setError(''); // Limpa erros antigos
         try {
             await signInWithRedirect(auth, googleProvider);
         } catch (error) {
@@ -500,7 +516,9 @@ function LoginPage() {
         }
     };
 
-    if (isProcessingRedirect) {
+    // Enquanto o sistema central (AuthProvider) está a verificar o usuário, exibimos um loading.
+    // Isso é crucial para evitar o "loop".
+    if (loading) {
         return <div style={{textAlign: 'center', marginTop: '150px'}}>Verificando autenticação...</div>;
     }
 
@@ -712,6 +730,10 @@ function FreeSignalsPage() {
     );
 }
 
+// Dentro do seu arquivo App.js
+
+// Substitua sua função DashboardPage antiga por esta
+
 function DashboardPage() {
     const [allData, setAllData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
@@ -722,45 +744,31 @@ function DashboardPage() {
 
     useEffect(() => {
         const parseData = (text) => {
-            const cleanedText = text.replace(/--- RELATÓRIO COMPLETO DE BACKTEST V18.18 ---/g, '')
-                                     .replace(/RODADAS ANALISADAS: \d+ a \d+/g, '')
-                                     .replace(/-------------------------------------------/g, '')
-                                     .replace(/Total de Entradas \(Aptas\): \d+/g, '')
-                                     .replace(/Total de Greens: \d+/g, '')
-                                     .replace(/Total de Reds: \d+/g, '')
-                                     .replace(/Assertividade: \d+\.\d+%?/g, '');
-
+            const cleanedText = text.replace(/--- RELATÓRIO COMPLETO DE BACKTEST V18.18 ---/g, '').replace(/RODADAS ANALISADAS: \d+ a \d+/g, '').replace(/-------------------------------------------/g, '').replace(/Total de Entradas \(Aptas\): \d+/g, '').replace(/Total de Greens: \d+/g, '').replace(/Total de Reds: \d+/g, '').replace(/Assertividade: \d+\.\d+%?/g, '');
             const gameBlocks = cleanedText.split(/\[R\d+\]/).filter(block => block.trim() !== '');
             const data = [];
-
             gameBlocks.forEach(block => {
                 const lines = block.trim().split('\n').map(line => line.trim());
                 if (lines.length < 2) return;
-
                 const matchLine = lines[0];
                 const teamsMatch = matchLine.match(/(.+) (\d+–\d+) (.+)/);
                 if (!teamsMatch) return;
-
                 const teams = `${teamsMatch[1]} vs ${teamsMatch[3]}`;
                 const score = teamsMatch[2];
-
                 const resultLine = lines.find(l => l.includes('RESULTADO:'));
                 const result = resultLine ? (resultLine.includes('Green') ? 1 : 0) : null;
-
                 const dateMatches = block.match(/(\d{4}-\d{2}-\d{2}):/g);
                 let bestGuessDate = null;
                 if (dateMatches) {
                     const dates = dateMatches.map(d => new Date(d.replace(':', '') + 'T12:00:00Z'));
                     bestGuessDate = new Date(Math.max.apply(null, dates));
                 }
-
                 if (result !== null && bestGuessDate && !isNaN(bestGuessDate)) {
                     data.push({ date: bestGuessDate, teams, score, result });
                 }
             });
             return data.sort((a, b) => a.date - b.date);
         };
-
         const loadData = async () => {
             try {
                 const response = await fetch(process.env.PUBLIC_URL + '/banco-de-dados.txt');
@@ -780,7 +788,6 @@ function DashboardPage() {
     useEffect(() => {
         const data = currentYear === 'all' ? allData : allData.filter(d => d.date.getFullYear().toString() === currentYear);
         setFilteredData(data);
-
         const total = data.length;
         if (total > 0) {
             const greens = data.filter(d => d.result === 1).length;
@@ -797,42 +804,18 @@ function DashboardPage() {
             setChartData(null);
             return;
         }
-
-        let labels = [];
-        let dataPoints = [];
-        let tooltipData = [];
-        
-        // --- NOVAS VARIÁVEIS PARA ESTILIZAÇÃO ---
-        const pointBackgroundColors = [];
-        const pointRadii = [];
-
-        let bankroll = 100;
-        let isSorosLevel = false;
-        let sorosAmount = 0;
-        
-        const WIN_RATE = 0.807;
-        const AVG_ODD = 1.28;
+        let labels = [], dataPoints = [], tooltipData = [], pointBackgroundColors = [], pointRadii = [];
+        let bankroll = 100, isSorosLevel = false, sorosAmount = 0;
+        const WIN_RATE = 0.807, AVG_ODD = 1.28;
         const kellyFraction = ((WIN_RATE * (AVG_ODD - 1)) - (1 - WIN_RATE)) / (AVG_ODD - 1);
         const standardStakePercentage = kellyFraction > 0 ? kellyFraction : 0.05;
-
         filteredData.forEach((entry, index) => {
-            let stake;
-
-            if (isSorosLevel) {
-                stake = sorosAmount;
-            } else {
-                stake = bankroll * standardStakePercentage;
-            }
-            
+            let stake = isSorosLevel ? sorosAmount : bankroll * standardStakePercentage;
             stake = Math.max(stake, 0.01);
-            if (stake > bankroll) {
-                stake = bankroll;
-            }
-
+            if (stake > bankroll) stake = bankroll;
             if (entry.result === 1) { // Green
                 const profit = stake * (AVG_ODD - 1);
                 bankroll += profit;
-                
                 if (isSorosLevel) {
                     isSorosLevel = false;
                     sorosAmount = 0;
@@ -840,61 +823,39 @@ function DashboardPage() {
                     isSorosLevel = true;
                     sorosAmount = stake + profit;
                 }
-                // Adiciona estilos para Green
                 pointBackgroundColors.push('rgba(0, 209, 178, 0.8)');
                 pointRadii.push(3);
-
             } else { // Red
                 bankroll -= stake;
                 isSorosLevel = false;
                 sorosAmount = 0;
-
-                // Adiciona estilos para Red
-                pointBackgroundColors.push('#FF3860'); // Cor de erro do CSS
-                pointRadii.push(5); // Raio maior para destacar
+                pointBackgroundColors.push('#FF3860');
+                pointRadii.push(5);
             }
             dataPoints.push(bankroll.toFixed(2));
             labels.push(index + 1);
-            tooltipData.push({ ...entry, date: entry.date.toLocaleDateString('pt-BR'), bankroll: bankroll.toFixed(2) });
+            tooltipData.push({ ...entry, date: entry.date.toLocaleString('pt-BR'), bankroll: bankroll.toFixed(2) });
         });
-        
         setChartData({
             labels,
             datasets: [{
-                label: 'Performance',
-                data: dataPoints,
-                backgroundColor: 'rgba(0, 209, 178, 0.1)',
-                fill: true,
-                tension: 0.1,
-                // --- PROPRIEDADES DE ESTILO ATUALIZADAS ---
-                pointBackgroundColor: pointBackgroundColors,
-                pointBorderColor: pointBackgroundColors,
-                pointRadius: pointRadii,
-                pointHoverRadius: 7, // Aumenta o raio no hover
+                label: 'Performance', data: dataPoints, backgroundColor: 'rgba(0, 209, 178, 0.1)', fill: true, tension: 0.1,
+                pointBackgroundColor: pointBackgroundColors, pointBorderColor: pointBackgroundColors, pointRadius: pointRadii, pointHoverRadius: 7,
                 segment: {
-                    // Colore o segmento de linha que LEVA a um ponto de Red
                     borderColor: ctx => {
                         const dataIndex = ctx.p1.dataIndex;
-                        if (tooltipData[dataIndex] && tooltipData[dataIndex].result === 0) {
-                            return '#FF3860'; // Cor vermelha
-                        }
-                        return 'rgba(0, 209, 178, 0.8)'; // Cor padrão
+                        if (tooltipData[dataIndex] && tooltipData[dataIndex].result === 0) return '#FF3860';
+                        return 'rgba(0, 209, 178, 0.8)';
                     },
                 },
             }],
-            yAxisLabel: 'Banca (Unidades)',
-            tooltipData
+            yAxisLabel: 'Banca (Unidades)', tooltipData
         });
     }, [filteredData]);
 
     return (
         <>
-            <section className="dashboard-header">
-                <div className="container">
-                    <h1>Performance Histórica da Estratégia</h1>
-                    <p>Visualize nossos resultados desde 2022 de forma transparente.</p>
-                </div>
-            </section>
+            <section className="dashboard-header"><div className="container"><h1>Performance Histórica da Estratégia</h1><p>Visualize nossos resultados desde 2022 de forma transparente.</p></div></section>
             <div className="container" style={{marginBottom: "80px"}}>
                 <div id="yearFilters" className="filters">
                     <button onClick={() => setCurrentYear('all')} className={`control-btn ${currentYear === 'all' ? 'active' : ''}`}>Todos</button>
@@ -915,25 +876,34 @@ function DashboardPage() {
                         plugins: { 
                             legend: { display: false },
                             tooltip: {
-                                enabled: true,
-                                mode: 'index',
-                                intersect: false,
+                                enabled: true, mode: 'index', intersect: false,
                                 callbacks: {
-                                    title: function(context) {
-                                        const dataIndex = context[0].dataIndex;
-                                        return `Data (Aprox.): ${chartData.tooltipData[dataIndex].date}`;
-                                    },
-                                    label: function(context) {
+                                    title: (context) => `Data (Aprox.): ${chartData.tooltipData[context[0].dataIndex].date}`,
+                                    label: (context) => {
                                         const data = chartData.tooltipData[context.dataIndex];
-                                        const resultLabel = data.result === 1 ? 'Green' : 'Red';
-                                        const bankrollLabel = data.bankroll ? `Banca: ${data.bankroll} Unidades` : `Pontuação: ${context.raw}`;
-                                        return [
-                                            `Jogo: ${data.teams} (${data.score})`,
-                                            `Resultado: ${resultLabel}`,
-                                            bankrollLabel
-                                        ];
+                                        return [ `Jogo: ${data.teams} (${data.score})`, `Resultado: ${data.result === 1 ? 'Green' : 'Red'}`, `Banca: ${data.bankroll} Unidades`];
                                     }
                                 }
+                            },
+                            // --- ESTA É A NOVA CONFIGURAÇÃO DE ZOOM ---
+                            zoom: {
+                                pan: { 
+                                    enabled: true,      // Habilita o "arrastar"
+                                    mode: 'x',          // Arrastar apenas no eixo horizontal
+                                    threshold: 5,       
+                                },
+                                zoom: { 
+                                    wheel: { enabled: true }, // Zoom com a roda do mouse
+                                    pinch: { enabled: true }, // Zoom com gesto de pinça (mobile)
+                                    mode: 'x'                 // Zoom apenas no eixo horizontal
+                                }
+                            },
+                            // --- ESTA É A NOVA CONFIGURAÇÃO DE "SUAVIZAÇÃO" ---
+                            decimation: { 
+                                enabled: true,          // Habilita a otimização
+                                algorithm: 'lttb',      // Algoritmo que mantém a forma do gráfico
+                                samples: 100,           // Máximo de pontos a exibir quando sem zoom
+                                threshold: 150          // Ativa apenas para gráficos com mais de 150 pontos
                             }
                         },
                         scales: {
@@ -951,6 +921,7 @@ function DashboardPage() {
         </>
     );
 }
+
 // --- NOVAS PÁGINAS ---
 
 function ProfilePage() {

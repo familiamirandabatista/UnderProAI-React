@@ -1304,3 +1304,165 @@ main.auth-main {
         grid-template-columns: 1fr;
     }
 }
+
+/* --- ADIÇÕES PARA RESPONSIVIDADE MOBILE --- */
+
+/* Esconde o botão de menu no desktop */
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 1001; /* Garante que fique acima do menu */
+}
+
+/* --- Media Query Principal para Mobile (Tudo abaixo de 992px) --- */
+@media (max-width: 992px) {
+    /* --- AJUSTES NO HEADER E NAVEGAÇÃO --- */
+    
+    /* Mostra o botão de menu e esconde a navegação horizontal */
+    .mobile-nav-toggle {
+        display: block;
+    }
+
+    #main-nav {
+        /* Esconde o menu por padrão */
+        position: fixed;
+        top: 0;
+        right: -100%; /* Começa fora da tela */
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(18, 18, 18, 0.98);
+        backdrop-filter: blur(10px);
+        transition: right 0.4s ease-in-out;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Mostra o menu quando a classe 'active' é adicionada via React */
+    #main-nav.active {
+        right: 0;
+    }
+
+    #main-nav ul {
+        flex-direction: column; /* Empilha os links verticalmente */
+        gap: 24px;
+        text-align: center;
+    }
+    
+    #main-nav a, #main-nav .btn-logout {
+        font-size: 1.5rem; /* Aumenta o tamanho da fonte para toque */
+    }
+
+    /* Esconde o widget do usuário e o botão de sair no menu principal */
+    .user-profile-widget, .btn-logout {
+        /* Você pode optar por esconder no menu principal e mostrar em outro lugar se quiser */
+    }
+
+    /* --- AJUSTES GERAIS DE LAYOUT --- */
+    
+    .section {
+        padding: 60px 0;
+    }
+
+    #home-hero {
+        padding-top: 160px;
+        padding-bottom: 80px;
+    }
+
+    #home-hero h1 {
+        font-size: 2.8rem;
+    }
+
+    #home-hero p {
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+    }
+
+    /* Torna todos os grids de múltiplas colunas em uma única coluna */
+    .features-grid, 
+    .testimonials-grid, 
+    .strategy-content,
+    .simulation-grid,
+    .bm-grid-container,
+    .profile-grid-container {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ajuste para o conteúdo de estratégia não ficar tão grande */
+    .strategy-content {
+        gap: 32px;
+    }
+
+    /* Ajustes na página de Sinais VIP */
+    .controls-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .signals-grid {
+        grid-template-columns: 1fr; /* Garante que os cards não fiquem muito pequenos */
+    }
+}
+
+/* Media Query para telas ainda menores (ex: iPhone SE) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    #home-hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .auth-container {
+        padding: 24px;
+    }
+
+    .stat-card p {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-header h1, .historico-header h1, .page-header h1 {
+        font-size: 2.0rem;
+    }
+}
+
+/* --- AJUSTES PARA GRÁFICO COM SCROLL (VERSÃO CORRIGIDA) --- */
+
+/* 1. O Container Externo (O Quadro Visual) */
+.chart-container {
+    background-color: var(--color-surface);
+    padding: 32px; /* O padding fica aqui */
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+    height: 60vh;
+    min-height: 400px;
+    position: relative;
+    /* Removemos o overflow daqui */
+}
+
+/* 2. O Wrapper de Rolagem (Fica DENTRO do quadro) */
+.chart-scroll-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow-x: auto; /* A rolagem agora acontece aqui dentro */
+    position: relative;
+}
+
+/* 3. O Wrapper do Gráfico (O elemento que cresce) */
+.chart-wrapper {
+    position: relative;
+    height: 100%;
+}
