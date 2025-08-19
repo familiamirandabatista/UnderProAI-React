@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,7 +11,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory } from 'react-icons/fa';
+// Ícone de lápis adicionado
+import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory, FaUserCircle, FaPencilAlt } from 'react-icons/fa';
+
 // Firebase imports
 import { initializeApp } from 'firebase/app';
 import { 
@@ -21,17 +23,26 @@ import {
     createUserWithEmailAndPassword, 
     sendPasswordResetEmail,
     GoogleAuthProvider,
-    signInWithRedirect, // MUDANÇA: Usar signInWithRedirect
-    getRedirectResult,  // MUDANÇA: Usar getRedirectResult
-    signOut 
+    signInWithRedirect,
+    getRedirectResult,
+    signOut,
+    updateProfile
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+// Imports do Firebase Storage adicionados
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
 
 // --- CONFIGURAÇÃO DO FIREBASE ---
 import { firebaseConfig } from './firebase'; 
 
 // Inicializa o Firebase
+// NOTA: Certifique-se de que o seu ficheiro 'firebase.js' exporta uma configuração
+// que inclui a propriedade 'storageBucket' para o upload de ficheiros funcionar.
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app); // Inicializa o Storage
 const googleProvider = new GoogleAuthProvider();
 
 
@@ -80,25 +91,78 @@ const AuthContext = React.createContext(null);
 const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [userProfile, setUserProfile] = useState(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+            if (currentUser) {
+                const userDocRef = doc(db, "users", currentUser.uid);
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists()) {
+                    setUserProfile(docSnap.data());
+                } else {
+                    const newProfile = {
+                        displayName: currentUser.displayName || 'Novo Utilizador',
+                        email: currentUser.email,
+                        photoURL: currentUser.photoURL, // Adicionado para consistência
+                        isVip: false,
+                        phone: '',
+                        address: ''
+                    };
+                    await setDoc(userDocRef, newProfile);
+                    setUserProfile(newProfile);
+                }
+            } else {
+                setUserProfile(null);
+            }
             setLoading(false);
         });
-        return () => unsubscribe(); // Cleanup subscription on unmount
+        return () => unsubscribe();
     }, []);
     
-    const value = { user, loading };
+    // Expondo setUserProfile para atualizações instantâneas na UI
+    const value = { user, userProfile, loading, setUserProfile };
     return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 const useAuth = () => React.useContext(AuthContext);
 
+// --- COMPONENTES DE ROTA PROTEGIDA ---
+const AuthenticatedRoute = ({ children }) => {
+    const { user, loading } = useAuth();
+    if (loading) {
+        return <div style={{textAlign: 'center', marginTop: '150px'}}>A carregar...</div>;
+    }
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+    return children;
+};
+
+const VipRoute = ({ children }) => {
+    const { user, userProfile, loading } = useAuth();
+
+    if (loading) {
+        return <div style={{textAlign: 'center', marginTop: '150px'}}>A carregar...</div>;
+    }
+
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+    
+    if (!userProfile?.isVip) {
+        return <Navigate to="/planos" replace />;
+    }
+
+    return children;
+};
+
+
 // --- COMPONENTES PRINCIPAIS (HEADER, FOOTER, LAYOUT) ---
 
 function Header() {
-    const { user } = useAuth();
+    const { user, userProfile } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -113,7 +177,7 @@ function Header() {
 
     const scrollToSection = (sectionId) => {
         if (location.pathname !== '/') {
-            navigate('/#'); // Navega para a raiz do HashRouter
+            navigate('/#');
         }
         setTimeout(() => {
             const section = document.getElementById(sectionId);
@@ -140,26 +204,34 @@ function Header() {
                 </a>
                 <nav id="main-nav">
                     <ul id="nav-links">
-                        {user ? (
+                        <li><a href="/#" onClick={handleHomeClick} className="nav-link-icon"><FaHome /> Home</a></li>
+                        <li><a href="/#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
+                        <li><Link to="/dashboard" className="nav-link-icon"><FaHistory /> Histórico</Link></li>
+                        <li><Link to="/sinais-gratuitos" className="nav-link-icon"><FaBroadcastTower /> Sinais Gratuitos</Link></li>
+                        <li>
+                            <Link to="/sinais-vip" className="vip-link">
+                                <FaCrown className="crown-icon" />
+                                Sinais VIP
+                            </Link>
+                        </li>
+                        {user && userProfile ? (
                             <>
-                                <li><Link to="/dashboard">Dashboard</Link></li>
-                                <li><Link to="/sinais-gratuitos">Sinais VIP</Link></li>
+                                <li>
+                                    <Link to="/perfil" className="user-profile-widget">
+                                        {/* CORREÇÃO: Usar userProfile?.photoURL para garantir que a foto mais recente é exibida */}
+                                        <img src={userProfile?.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`} alt="Perfil" className="header-profile-pic" />
+                                        <div className="user-info-header">
+                                            <span>{userProfile.displayName}</span>
+                                            <span className={`status-badge-header ${userProfile.isVip ? 'vip' : 'free'}`}>
+                                                {userProfile.isVip ? <><FaCrown /> VIP</> : 'Free'}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                </li>
                                 <li><button onClick={handleLogout} className="btn btn-logout">Sair</button></li>
                             </>
                         ) : (
-                            <>
-                                <li><a href="/#" onClick={handleHomeClick} className="nav-link-icon"><FaHome /> Home</a></li>
-                                <li><a href="/#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
-                                <li><Link to="/dashboard" className="nav-link-icon"><FaHistory /> Histórico</Link></li>
-                                <li><Link to="/sinais-gratuitos" className="nav-link-icon"><FaBroadcastTower /> Sinais Gratuitos</Link></li>
-                                <li>
-                                    <Link to="/cadastro" className="vip-link">
-                                        <FaCrown className="crown-icon" />
-                                        Sinais VIP
-                                    </Link>
-                                </li>
-                                <li><Link to="/login" className="btn btn-primary">Entrar</Link></li>
-                            </>
+                            <li><Link to="/login" className="btn btn-primary">Entrar</Link></li>
                         )}
                     </ul>
                 </nav>
@@ -230,7 +302,8 @@ function HomePage() {
             <section id="home-hero" style={heroStyle}>
                 <div className="container">
                     <h1>Aposte com Dados, Não com Achismos.</h1>
-                    <p>A UnderPro AI utiliza inteligência artificial para analisar milhares de dados e encontrar as melhores oportunidades no mercado de apostas esportivas.</p>
+                    {/* TEXTO ALTERADO AQUI */}
+                    <p>A UnderPro AI utiliza inteligência artificial para analisar milhares de dados e encontrar as melhores oportunidades no mercado de Under 3.5 gols.</p>
                     <Link to="/cadastro" className="btn btn-primary">Criar Conta Gratuita</Link>
                 </div>
             </section>
@@ -260,21 +333,42 @@ function HomePage() {
                 </div>
             </section>
 
+            {/* SEÇÃO DA ESTRATÉGIA TOTALMENTE REFORMULADA */}
             <section id="strategy-section" className="section">
                 <div className="container">
-                    <h2 className="section-title">A Estratégia Lucrativa por Trás dos Sinais</h2>
-                    <p className="section-subtitle">Não se trata de sorte, mas de matemática. Nosso método foca em encontrar apostas de Valor Esperado Positivo (EV+), o segredo dos profissionais.</p>
+                    <h2 className="section-title">Transforme Apostas em Lucro Inteligente</h2>
+                    <p className="section-subtitle">Chega de “achismos”. Aqui, a matemática trabalha a seu favor.</p>
                     <div className="strategy-content">
                         <div className="strategy-text">
-                            <h3>O que é Valor Esperado Positivo (EV+)?</h3>
-                            <p>Imagine uma moeda viciada que cai "cara" 60% das vezes, mas a casa de apostas paga como se a chance fosse de 50%. Apostar em "cara" repetidamente é uma decisão de EV+, pois, a longo prazo, a probabilidade está a seu favor.</p>
-                            <p>Nossa IA faz exatamente isso: ela analisa milhares de dados para encontrar "moedas viciadas" no mercado – jogos onde a probabilidade de um resultado (como Menos de 3.5 Gols) é maior do que a odd oferecida sugere.</p>
+                            <h3>Como Funciona?</h3>
+                            <p>Com <strong>80,7% de assertividade</strong>, nosso método já é lucrativo a partir de odds de 1.25, mas é com odds estratégicas maiores que os lucros se multiplicam.</p>
+                            <p><strong>1. Análise da IA:</strong> A inteligência artificial da UnderPro AI seleciona os jogos com a maior probabilidade de resultarem em Menos de 3.5 golos (Under 3.5).</p>
+                            <p><strong>2. O Seu Controlo:</strong> Você recebe o sinal e decide quando e em qual odd entrar, mantendo total controlo sobre a sua aposta.</p>
+                            <p><strong>3. Geração de Valor:</strong> Cada decisão, combinada com a alta assertividade da nossa estratégia, gera Valor Esperado Positivo (EV+) real e consistente a longo prazo.</p>
                         </div>
                         <div className="strategy-text">
-                            <h3>Como 80.7% de Acerto se Torna Lucro?</h3>
-                            <p>Muitos apostadores buscam odds altas e acabam perdendo no longo prazo. Nossa estratégia foca em consistência. Com uma assertividade de 80.7% e uma odd média de 1.28, a matemática é simples:</p>
-                            <p>A cada 100 apostas, acertamos cerca de 81. Ganhamos 81 vezes o lucro da odd e perdemos 19 vezes o valor apostado. O resultado final é um lucro consistente e previsível, transformando a aposta em um verdadeiro investimento.</p>
+                            <h3>EV+ na Prática: Veja os Números</h3>
+                            <p>O Valor Esperado Positivo (EV+) é a base do lucro. Veja como a nossa assertividade se traduz em ganhos com diferentes odds:</p>
+                            <div className="ev-calculation">
+                                <h4>Odd 1.25:</h4>
+                                <p>Neste cenário, o lucro já existe, provando a robustez do método.</p>
+                                <code>EV+ = (0,807 × 1,25) - 1 = 0,00875 ≈ <strong>0,88% de lucro por aposta</strong></code>
+                            </div>
+                            <div className="ev-calculation">
+                                <h4>Odd 1.35:</h4>
+                                <p>Com uma odd ligeiramente maior, o retorno esperado aumenta exponencialmente.</p>
+                                <code>EV+ = (0,807 × 1,35) - 1 = 0,08945 ≈ <strong>8,95% de lucro por aposta</strong></code>
+                            </div>
                         </div>
+                    </div>
+                    <div className="strategy-example">
+                        <h3>Exemplo Prático</h3>
+                        <p>Apostando R$100 em odds de 1.35 com nossa assertividade:</p>
+                        <ul>
+                            <li><strong>Lucro esperado:</strong> Aproximadamente R$9 por aposta.</li>
+                            <li><strong>Após 50 apostas consistentes:</strong> Potencial de ~R$450 de lucro acumulado.</li>
+                        </ul>
+                        <p>Cada sequência de vitórias aumenta o efeito exponencial, transformando sua banca em uma máquina de lucros previsíveis.</p>
                     </div>
                 </div>
             </section>
@@ -312,14 +406,12 @@ function HomePage() {
         </>
     );
 }
-
 function LoginPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    // MUDANÇA: Lógica para pegar o resultado do redirecionamento do Google
     useEffect(() => {
         getRedirectResult(auth)
             .then((result) => {
@@ -383,13 +475,25 @@ function RegisterPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showVerification, setShowVerification] = useState(false);
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            await updateProfile(user, { displayName: name });
+
+            const userDocRef = doc(db, "users", user.uid);
+            await setDoc(userDocRef, {
+                displayName: name,
+                email: user.email,
+                isVip: false,
+                phone: '',
+                address: ''
+            });
+
             setShowVerification(true);
         } catch (err) {
              if (err.code === 'auth/email-already-in-use') {
@@ -546,7 +650,6 @@ function FreeSignalsPage() {
     );
 }
 
-// NOVA PÁGINA DE DASHBOARD/HISTÓRICO
 function DashboardPage() {
     const [allData, setAllData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
@@ -636,6 +739,10 @@ function DashboardPage() {
         let labels = [];
         let dataPoints = [];
         let tooltipData = [];
+        
+        // --- NOVAS VARIÁVEIS PARA ESTILIZAÇÃO ---
+        const pointBackgroundColors = [];
+        const pointRadii = [];
 
         let bankroll = 100;
         let isSorosLevel = false;
@@ -671,10 +778,18 @@ function DashboardPage() {
                     isSorosLevel = true;
                     sorosAmount = stake + profit;
                 }
+                // Adiciona estilos para Green
+                pointBackgroundColors.push('rgba(0, 209, 178, 0.8)');
+                pointRadii.push(3);
+
             } else { // Red
                 bankroll -= stake;
                 isSorosLevel = false;
                 sorosAmount = 0;
+
+                // Adiciona estilos para Red
+                pointBackgroundColors.push('#FF3860'); // Cor de erro do CSS
+                pointRadii.push(5); // Raio maior para destacar
             }
             dataPoints.push(bankroll.toFixed(2));
             labels.push(index + 1);
@@ -686,10 +801,24 @@ function DashboardPage() {
             datasets: [{
                 label: 'Performance',
                 data: dataPoints,
-                borderColor: 'rgba(0, 209, 178, 0.8)',
                 backgroundColor: 'rgba(0, 209, 178, 0.1)',
                 fill: true,
                 tension: 0.1,
+                // --- PROPRIEDADES DE ESTILO ATUALIZADAS ---
+                pointBackgroundColor: pointBackgroundColors,
+                pointBorderColor: pointBackgroundColors,
+                pointRadius: pointRadii,
+                pointHoverRadius: 7, // Aumenta o raio no hover
+                segment: {
+                    // Colore o segmento de linha que LEVA a um ponto de Red
+                    borderColor: ctx => {
+                        const dataIndex = ctx.p1.dataIndex;
+                        if (tooltipData[dataIndex] && tooltipData[dataIndex].result === 0) {
+                            return '#FF3860'; // Cor vermelha
+                        }
+                        return 'rgba(0, 209, 178, 0.8)'; // Cor padrão
+                    },
+                },
             }],
             yAxisLabel: 'Banca (Unidades)',
             tooltipData
@@ -760,7 +889,242 @@ function DashboardPage() {
         </>
     );
 }
+// --- NOVAS PÁGINAS ---
 
+function ProfilePage() {
+    const { user, userProfile, setUserProfile } = useAuth();
+    const [displayName, setDisplayName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const [message, setMessage] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (userProfile) {
+            setDisplayName(userProfile.displayName || '');
+            setPhone(userProfile.phone || '');
+            setAddress(userProfile.address || '');
+        }
+    }, [userProfile]);
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        if (!user) return;
+
+        try {
+            const userDocRef = doc(db, "users", user.uid);
+            await setDoc(userDocRef, { 
+                displayName, 
+                phone, 
+                address 
+            }, { merge: true });
+            
+            if (user.displayName !== displayName) {
+                await updateProfile(user, { displayName });
+            }
+
+            setMessage('Perfil atualizado com sucesso!');
+        } catch (error) {
+            console.error("Erro ao atualizar o perfil:", error);
+            setMessage('Erro ao atualizar o perfil.');
+        }
+    };
+
+    const handleProfilePicClick = () => {
+        if (!uploading) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file || !user) return;
+
+        setUploading(true);
+        setMessage('');
+
+        try {
+            // Cria uma referência para o ficheiro no Firebase Storage
+            const storageRef = ref(storage, `profilePictures/${user.uid}`);
+            // Faz o upload do ficheiro
+            await uploadBytes(storageRef, file);
+            // Obtém o URL de download da imagem
+            const newPhotoURL = await getDownloadURL(storageRef);
+
+            // Atualiza o perfil no Firebase Authentication
+            await updateProfile(auth.currentUser, { photoURL: newPhotoURL });
+
+            // Atualiza o URL da foto no Firestore
+            const userDocRef = doc(db, "users", user.uid);
+            await setDoc(userDocRef, { photoURL: newPhotoURL }, { merge: true });
+            
+            // Atualiza o estado local para a UI refletir a mudança instantaneamente
+            if (setUserProfile) {
+                setUserProfile(prev => ({...prev, photoURL: newPhotoURL}));
+            }
+            
+            setMessage('Foto de perfil atualizada com sucesso!');
+
+        } catch (error) {
+            console.error("Erro ao carregar a foto:", error);
+            setMessage('Erro ao carregar a foto. Tente novamente.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    if (!userProfile) {
+        return <div style={{textAlign: 'center', marginTop: '150px'}}>A carregar perfil...</div>;
+    }
+
+    return (
+        <>
+            <section className="page-header">
+                <div className="container">
+                    <h1>Meu Perfil</h1>
+                </div>
+            </section>
+            <div className="container" style={{maxWidth: '800px', margin: '0 auto 80px auto'}}>
+                <div className="profile-container">
+                    <div className="profile-header">
+                        <div className="profile-pic-container" onClick={handleProfilePicClick}>
+                            {/* CORREÇÃO: Usar userProfile?.photoURL para garantir que a foto mais recente é exibida */}
+                            <img src={userProfile?.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`} alt="Foto de Perfil" className="profile-pic" />
+                            <div className="profile-pic-overlay">
+                                {uploading ? <span>A carregar...</span> : <FaPencilAlt size={30} />}
+                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                                accept="image/png, image/jpeg"
+                            />
+                        </div>
+
+                        <h2>{userProfile.displayName}</h2>
+                        <p>{user.email}</p>
+                        <span className={`status-badge ${userProfile.isVip ? 'vip' : 'free'}`}>
+                            {userProfile.isVip ? 'Plano VIP' : 'Plano Gratuito'}
+                        </span>
+                    </div>
+                    <form className="profile-form" onSubmit={handleSave}>
+                        <div className="form-group">
+                            <label htmlFor="displayName">Nome de Exibição</label>
+                            <input type="text" id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="phone">Telefone</label>
+                            <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="address">Morada</label>
+                            <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+                        </div>
+                        <button type="submit" className="btn btn-primary">Guardar Alterações</button>
+                        {message && <p className={`message ${message.includes('Erro') ? 'error' : 'success'}`} style={{display: 'block'}}>{message}</p>}
+                    </form>
+                    {!userProfile.isVip && (
+                        <div className="cta-vip">
+                            <h3>Aceda a todos os sinais!</h3>
+                            <p>Faça o upgrade para o plano VIP e tenha acesso ilimitado a todas as nossas análises e ferramentas exclusivas.</p>
+                            <Link to="/planos" className="btn btn-primary">Seja VIP</Link>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}
+
+function VipSignalsPage() {
+    const [tipsData, setTipsData] = useState({ title: 'A carregar sinais VIP...', tips: [] });
+
+    useEffect(() => {
+        const loadTips = async () => {
+            try {
+                const response = await fetch(process.env.PUBLIC_URL + '/dicas-da-semana.txt');
+                if (!response.ok) throw new Error('Arquivo de sinais não encontrado.');
+                const textData = await response.text();
+                
+                const lines = textData.split('\n').map(line => line.trim()).filter(line => line);
+                const titleLine = lines.find(line => line.startsWith('--- DICAS E ANÁLISE')) || 'Dicas da Semana';
+                const title = titleLine.replace('---', '').trim();
+                
+                const tips = [];
+                let currentTip = null;
+
+                lines.forEach(line => {
+                    if (line.startsWith('🎯 PARTIDA:')) {
+                        if (currentTip) tips.push(currentTip);
+                        currentTip = { match: line.replace('🎯 PARTIDA:', '').trim(), details: [] };
+                    } else if (currentTip && line.length > 0 && !line.startsWith('===') && !line.startsWith('---')) {
+                        currentTip.details.push(line);
+                    }
+                });
+                if (currentTip) tips.push(currentTip);
+                
+                setTipsData({ title: 'Sinais VIP Exclusivos', tips });
+            } catch (error) {
+                console.error("Erro ao carregar sinais VIP:", error);
+                setTipsData({ title: 'Erro ao Carregar Sinais', tips: [] });
+            }
+        };
+        loadTips();
+    }, []);
+
+    return (
+        <>
+            <section className="page-header"><div className="container">
+                <h1>Sinais VIP</h1>
+                <p>Acesso completo a todas as análises geradas por nossa IA.</p>
+            </div></section>
+            <div className="container">
+                <div className="chat-container">
+                    <div className="chat-header">{tipsData.title}</div>
+                    <div className="chat-messages">
+                        {tipsData.tips.length > 0 ? (
+                            tipsData.tips.map((tip, index) => (
+                                <div key={index} className="chat-bubble">
+                                    <div className="match-title">{tip.match}</div>
+                                    <div className="match-details" dangerouslySetInnerHTML={{ __html: tip.details.join('<br />') }}></div>
+                                </div>
+                            ))
+                        ) : ( <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>Nenhum sinal VIP disponível no momento.</p> )}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
+
+function PlansPage() {
+    return (
+        <>
+            <section className="page-header">
+                <div className="container">
+                    <h1>Nossos Planos VIP</h1>
+                    <p>Escolha o plano ideal para você e comece a investir com inteligência.</p>
+                </div>
+            </section>
+            <div className="container" style={{textAlign: 'center', paddingBottom: '80px'}}>
+                <div className="feature-card" style={{maxWidth: '500px', margin: '0 auto'}}>
+                    <h3>Plano VIP Completo</h3>
+                    <p style={{fontSize: '2rem', color: 'var(--color-primary)', margin: '20px 0'}}>€9.99/mês</p>
+                    <ul style={{listStyle: 'none', textAlign: 'left', marginBottom: '30px', color: 'var(--color-text-secondary)'}}>
+                        <li>✅ Acesso a todos os sinais</li>
+                        <li>✅ Análises detalhadas</li>
+                        <li>✅ Ferramentas de gestão de banca</li>
+                        <li>✅ Suporte prioritário</li>
+                    </ul>
+                    <button className="btn btn-primary" onClick={() => alert('Integração de pagamento em breve!')}>Assinar Agora</button>
+                </div>
+            </div>
+        </>
+    );
+}
 
 // --- ROTEADOR PRINCIPAL ---
 export default function App() {
@@ -773,8 +1137,12 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/cadastro" element={<RegisterPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/sinais-gratuitos" element={<FreeSignalsPage />} />
+            <Route path="/sinais-gratuitos" element={<AuthenticatedRoute><FreeSignalsPage /></AuthenticatedRoute>} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/planos" element={<PlansPage />} />
+            {/* Rotas Protegidas */}
+            <Route path="/perfil" element={<AuthenticatedRoute><ProfilePage /></AuthenticatedRoute>} />
+            <Route path="/sinais-vip" element={<VipRoute><VipSignalsPage /></VipRoute>} />
           </Routes>
         </Layout>
       </Router>
