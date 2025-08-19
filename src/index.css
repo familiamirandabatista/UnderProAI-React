@@ -751,3 +751,556 @@ main.auth-main {
     margin-right: auto;
     color: var(--color-text-secondary);
 }
+
+/* --- ESTILOS PARA A NOVA PÁGINA DE SINAIS VIP --- */
+
+.controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 0 15px;
+    flex-grow: 1;
+}
+
+.search-bar svg {
+    color: var(--color-text-secondary);
+}
+
+.search-bar input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    padding: 12px 10px;
+    font-size: 1rem;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+}
+
+.signals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+}
+
+.signal-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.signal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+}
+
+.card-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card-header h3 {
+    margin-bottom: 8px;
+    font-size: 1.3rem;
+}
+
+.profile-badge {
+    background-color: rgba(0, 209, 178, 0.1);
+    color: var(--color-primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex-grow: 1;
+}
+
+.main-bet-suggestion {
+    text-align: center;
+    background-color: var(--color-background);
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.main-bet-suggestion h4 {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.main-bet-suggestion p {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 16px;
+}
+
+.copy-btn {
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.copy-btn:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.metrics-container h4 {
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.metric-bar {
+    margin-bottom: 12px;
+}
+
+.metric-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.progress-container {
+    width: 100%;
+    background-color: var(--color-background);
+    border-radius: 20px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.5s ease-in-out;
+}
+
+.card-footer {
+    padding: 10px 20px 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.card-footer summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-footer summary:hover {
+    color: var(--color-primary);
+}
+
+.chevron-icon {
+    transition: transform 0.3s ease;
+}
+
+.card-footer details[open] .chevron-icon {
+    transform: rotate(180deg);
+}
+
+.analysis-content {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.analysis-content p {
+    margin-bottom: 10px;
+}
+
+/* --- ESTILOS PARA A NOVA SIMULAÇÃO PRÁTICA --- */
+.simulation-subtitle, .simulation-conclusion {
+    max-width: 750px;
+    margin-left: auto;
+    margin-right: auto;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.simulation-subtitle {
+    margin-bottom: 32px;
+}
+
+.simulation-conclusion {
+    margin-top: 32px;
+    font-size: 1.1rem;
+}
+
+.simulation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.simulation-card {
+    background-color: #2a2a2a;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.simulation-card h4 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+    color: var(--color-text-primary);
+}
+
+.strategy-desc {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    flex-grow: 1;
+    margin-bottom: 20px;
+}
+
+.results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.results-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 1rem;
+}
+
+.results-list li:last-child {
+    border-bottom: none;
+}
+
+.results-list li span {
+    color: var(--color-text-secondary);
+}
+
+.result-profit {
+    color: var(--color-text-primary);
+}
+
+.result-profit-vip {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.vip-method {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 20px rgba(0, 209, 178, 0.1);
+}
+
+@media (max-width: 768px) {
+    .simulation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- DIVISOR PARA A SEÇÃO DE SIMULAÇÃO --- */
+.section-divider {
+    border: 0;
+    height: 1px;
+    background: var(--color-border);
+    margin: 48px auto;
+    width: 50%;
+}
+
+/* --- ESTILOS PARA A PÁGINA DE GESTÃO DE BANCA --- */
+
+.bm-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.bm-card {
+    background-color: var(--color-surface);
+    padding: 24px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+}
+
+.bm-card-title {
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.bm-card .form-group input {
+    margin-bottom: 16px; /* Ajuste de margem para inputs */
+}
+
+.fixed-params {
+    padding: 16px;
+    background-color: var(--color-background);
+    border-radius: 8px;
+    margin: 16px 0;
+}
+.fixed-params h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+.param-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding: 4px 0;
+}
+
+.bm-summary {
+    text-align: center;
+}
+.bm-summary label {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+.bm-status {
+    font-style: italic;
+    margin-bottom: 16px;
+}
+.bm-next-stake {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-top: 8px;
+}
+
+.bm-pending-card {
+    grid-column: span 2;
+    border-color: var(--color-primary);
+    text-align: center;
+}
+.bm-resolve-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+}
+.btn-success, .btn-danger {
+    padding: 10px 30px;
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+.btn-success { background-color: var(--color-success); }
+.btn-success:hover { background-color: var(--color-primary-dark); }
+.btn-danger { background-color: var(--color-error); }
+.btn-danger:hover { background-color: #d12c4d; }
+
+
+.bm-io-controls {
+    grid-column: span 2;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+}
+
+.bm-history-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+.bm-history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.bm-history-table th, .bm-history-table td {
+    padding: 12px;
+    text-align: center;
+}
+.bm-history-table thead {
+    position: sticky;
+    top: 0;
+    background-color: var(--color-surface);
+    z-index: 10;
+}
+.bm-history-table th {
+    border-bottom: 2px solid var(--color-primary);
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+.bm-history-table td {
+    border-top: 1px solid var(--color-border);
+    font-size: 0.95rem;
+}
+.bm-history-table tbody tr:first-child td {
+    border-top: none;
+}
+.bm-green { background-color: rgba(0, 209, 178, 0.05); }
+.bm-red { background-color: rgba(255, 56, 96, 0.05); }
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .bm-grid-container {
+        grid-template-columns: 1fr;
+    }
+    .bm-pending-card, .bm-io-controls {
+        grid-column: auto;
+    }
+}
+
+/* --- ESTILOS PARA O GUIA DA GESTÃO DE BANCA --- */
+
+.bm-explanation-box {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    padding: 10px 24px;
+}
+
+.bm-explanation-box summary {
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.bm-explanation-box summary h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-text-primary);
+    transition: color 0.3s ease;
+}
+
+.bm-explanation-box summary:hover h3 {
+    color: var(--color-primary);
+}
+
+.bm-explanation-box .chevron-icon {
+    transition: transform 0.3s ease;
+    color: var(--color-text-secondary);
+}
+
+.bm-explanation-box[open] .chevron-icon {
+    transform: rotate(180deg);
+}
+
+.explanation-content {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+}
+
+.explanation-content h4 {
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.explanation-content ul, .explanation-content ol {
+    padding-left: 20px;
+}
+
+/* --- ESTILOS PARA A NOVA PÁGINA DE PERFIL --- */
+
+.profile-grid-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.profile-main-card {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+    padding: 40px;
+}
+
+.profile-side-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.side-card {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+    padding: 24px;
+}
+
+.side-card h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    color: var(--color-text-primary);
+}
+
+.side-card .status-badge {
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.plan-description {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.member-since {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 16px;
+}
+
+/* Responsividade para a página de perfil */
+@media (max-width: 992px) {
+    .profile-grid-container {
+        grid-template-columns: 1fr;
+    }
+}

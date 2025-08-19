@@ -1,3 +1,4 @@
+import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory, FaUserCircle, FaPencilAlt, FaCopy, FaSearch, FaChevronDown } from 'react-icons/fa';
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
@@ -11,9 +12,6 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-// Ícone de lápis adicionado
-import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory, FaUserCircle, FaPencilAlt } from 'react-icons/fa';
-
 // Firebase imports
 import { initializeApp } from 'firebase/app';
 import { 
@@ -101,18 +99,8 @@ const AuthProvider = ({ children }) => {
                 const docSnap = await getDoc(userDocRef);
                 if (docSnap.exists()) {
                     setUserProfile(docSnap.data());
-                } else {
-                    const newProfile = {
-                        displayName: currentUser.displayName || 'Novo Utilizador',
-                        email: currentUser.email,
-                        photoURL: currentUser.photoURL, // Adicionado para consistência
-                        isVip: false,
-                        phone: '',
-                        address: ''
-                    };
-                    await setDoc(userDocRef, newProfile);
-                    setUserProfile(newProfile);
                 }
+                // LÓGICA DE CRIAÇÃO DE PERFIL REMOVIDA DAQUI
             } else {
                 setUserProfile(null);
             }
@@ -121,11 +109,9 @@ const AuthProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
     
-    // Expondo setUserProfile para atualizações instantâneas na UI
     const value = { user, userProfile, loading, setUserProfile };
     return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
-
 const useAuth = () => React.useContext(AuthContext);
 
 // --- COMPONENTES DE ROTA PROTEGIDA ---
@@ -208,6 +194,11 @@ function Header() {
                         <li><a href="/#strategy-section" onClick={(e) => { e.preventDefault(); scrollToSection('strategy-section'); }} className="nav-link-icon"><FaChartLine /> A Estratégia</a></li>
                         <li><Link to="/dashboard" className="nav-link-icon"><FaHistory /> Histórico</Link></li>
                         <li><Link to="/sinais-gratuitos" className="nav-link-icon"><FaBroadcastTower /> Sinais Gratuitos</Link></li>
+                        
+                        {userProfile?.isVip && (
+                             <li><Link to="/gestao-de-banca" className="nav-link-icon"><FaChartLine /> Gestão de Banca</Link></li>
+                        )}
+
                         <li>
                             <Link to="/sinais-vip" className="vip-link">
                                 <FaCrown className="crown-icon" />
@@ -218,8 +209,8 @@ function Header() {
                             <>
                                 <li>
                                     <Link to="/perfil" className="user-profile-widget">
-                                        {/* CORREÇÃO: Usar userProfile?.photoURL para garantir que a foto mais recente é exibida */}
-                                        <img src={userProfile?.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`} alt="Perfil" className="header-profile-pic" />
+                                        {/* IMAGEM PADRÃO ALTERADA AQUI */}
+                                        <img src={userProfile?.photoURL || process.env.PUBLIC_URL + '/images/perfil.png'} alt="Perfil" className="header-profile-pic" />
                                         <div className="user-info-header">
                                             <span>{userProfile.displayName}</span>
                                             <span className={`status-badge-header ${userProfile.isVip ? 'vip' : 'free'}`}>
@@ -302,7 +293,6 @@ function HomePage() {
             <section id="home-hero" style={heroStyle}>
                 <div className="container">
                     <h1>Aposte com Dados, Não com Achismos.</h1>
-                    {/* TEXTO ALTERADO AQUI */}
                     <p>A UnderPro AI utiliza inteligência artificial para analisar milhares de dados e encontrar as melhores oportunidades no mercado de Under 3.5 gols.</p>
                     <Link to="/cadastro" className="btn btn-primary">Criar Conta Gratuita</Link>
                 </div>
@@ -333,7 +323,6 @@ function HomePage() {
                 </div>
             </section>
 
-            {/* SEÇÃO DA ESTRATÉGIA TOTALMENTE REFORMULADA */}
             <section id="strategy-section" className="section">
                 <div className="container">
                     <h2 className="section-title">Transforme Apostas em Lucro Inteligente</h2>
@@ -362,13 +351,54 @@ function HomePage() {
                         </div>
                     </div>
                     <div className="strategy-example">
-                        <h3>Exemplo Prático</h3>
-                        <p>Apostando R$100 em odds de 1.35 com nossa assertividade:</p>
-                        <ul>
-                            <li><strong>Lucro esperado:</strong> Aproximadamente R$9 por aposta.</li>
-                            <li><strong>Após 50 apostas consistentes:</strong> Potencial de ~R$450 de lucro acumulado.</li>
-                        </ul>
-                        <p>Cada sequência de vitórias aumenta o efeito exponencial, transformando sua banca em uma máquina de lucros previsíveis.</p>
+                        <h3>Simulação Prática: 20 Apostas</h3>
+                        <p className="simulation-subtitle">Veja a diferença da gestão num cenário de curto prazo com banca de R$1.000, considerando uma odd média de 1.28 (valor comum em nossas entradas).</p>
+                        <div className="simulation-grid">
+                            <div className="simulation-card">
+                                <h4>Método 1: Stake Fixa</h4>
+                                <p className="strategy-desc">Você aposta sempre o mesmo valor, independentemente de ganhos ou perdas.</p>
+                                <ul className="results-list">
+                                    <li><span>Lucro Líquido:</span> <strong className="result-profit">R$32,00</strong></li>
+                                    <li><span>Crescimento:</span> <strong>+3,2%</strong></li>
+                                </ul>
+                            </div>
+                            <div className="simulation-card vip-method">
+                                <h4>Método 2: Híbrido (UnderPro AI)</h4>
+                                <p className="strategy-desc">A stake varia com a sua banca (juros compostos) e é otimizada após vitórias (método Soros).</p>
+                                <ul className="results-list">
+                                    <li><span>Lucro Líquido:</span> <strong className="result-profit-vip">R$81,00</strong></li>
+                                    <li><span>Crescimento:</span> <strong>+8,1%</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <hr className="section-divider" />
+                        <div className="long-term-example">
+                            <h3>O Verdadeiro Tesouro: O Longo Prazo (Exemplo Real de 2024)</h3>
+                            <p className="simulation-subtitle">O segredo é a consistência. Veja o resultado real de 2024 (194 Greens e 41 Reds), também com odd média de 1.28, começando com R$1.000:</p>
+                            <div className="simulation-grid">
+                                <div className="simulation-card">
+                                    <h4>Método 1: Stake Fixa</h4>
+                                    <p className="strategy-desc">Mesmo com um ano excelente, o crescimento é lento e linear, limitado pela falta de reinvestimento dos lucros.</p>
+                                    <ul className="results-list">
+                                        <li><span>Banca Inicial:</span> <strong>R$1.000,00</strong></li>
+                                        <li><span>Banca Final:</span> <strong>R$1.266,00</strong></li>
+                                        <li><span>Crescimento Anual:</span> <strong>+26,6%</strong></li>
+                                    </ul>
+                                </div>
+                                <div className="simulation-card vip-method">
+                                    <h4>Método 2: Híbrido (UnderPro AI)</h4>
+                                    <p className="strategy-desc">Aqui, os juros compostos e a gestão dinâmica transformam a consistência em um crescimento explosivo e exponencial.</p>
+                                    <ul className="results-list">
+                                        <li><span>Banca Inicial:</span> <strong>R$1.000,00</strong></li>
+                                        <li><span>Banca Final:</span> <strong className="result-profit-vip">R$4.000,00</strong></li>
+                                        <li><span>Crescimento Anual:</span> <strong className="result-profit-vip">+300%</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="simulation-conclusion">
+                            A escolha é sua: um lucro modesto ou um crescimento <strong>10 VEZES MAIOR</strong>. O acesso a este método de crescimento exponencial é o que separa amadores de investidores. Este é o poder do plano VIP.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -411,16 +441,44 @@ function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isProcessingRedirect, setIsProcessingRedirect] = useState(true); // Novo estado de carregamento
 
     useEffect(() => {
-        getRedirectResult(auth)
-            .then((result) => {
+        const handleRedirectResult = async () => {
+            try {
+                const result = await getRedirectResult(auth);
                 if (result) {
+                    // Usuário logado com sucesso via Google
+                    const user = result.user;
+                    const userDocRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(userDocRef);
+
+                    // Se o documento do usuário NÃO existir, cria um agora mesmo
+                    if (!docSnap.exists()) {
+                        const newProfile = {
+                            displayName: user.displayName || 'Novo Utilizador',
+                            email: user.email,
+                            photoURL: user.photoURL || process.env.PUBLIC_URL + '/images/perfil.png',
+                            isVip: false,
+                            phone: '',
+                            address: ''
+                        };
+                        await setDoc(userDocRef, newProfile);
+                    }
+                    // Agora que garantimos que o perfil existe, podemos navegar
                     navigate('/dashboard');
+                } else {
+                    // Não há resultado de redirecionamento, encerra o carregamento
+                    setIsProcessingRedirect(false);
                 }
-            }).catch((error) => {
-                setError("Falha ao fazer login com o Google.");
-            });
+            } catch (error) {
+                console.error("Erro no redirecionamento do Google:", error);
+                setError("Falha ao fazer login com o Google. Tente novamente.");
+                setIsProcessingRedirect(false);
+            }
+        };
+
+        handleRedirectResult();
     }, [navigate]);
 
     const handleSubmit = async (e) => {
@@ -441,6 +499,10 @@ function LoginPage() {
             setError("Não foi possível iniciar o login com o Google.");
         }
     };
+
+    if (isProcessingRedirect) {
+        return <div style={{textAlign: 'center', marginTop: '150px'}}>Verificando autenticação...</div>;
+    }
 
     return (
         <div className="auth-container">
@@ -897,8 +959,7 @@ function ProfilePage() {
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [message, setMessage] = useState('');
-    const [uploading, setUploading] = useState(false);
-    const fileInputRef = useRef(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (userProfile) {
@@ -911,128 +972,106 @@ function ProfilePage() {
     const handleSave = async (e) => {
         e.preventDefault();
         setMessage('');
+        setError('');
         if (!user) return;
 
         try {
             const userDocRef = doc(db, "users", user.uid);
-            await setDoc(userDocRef, { 
-                displayName, 
-                phone, 
-                address 
-            }, { merge: true });
+            const updatedProfileData = { displayName, phone, address };
+            await setDoc(userDocRef, updatedProfileData, { merge: true });
             
             if (user.displayName !== displayName) {
                 await updateProfile(user, { displayName });
             }
 
+            setUserProfile(prev => ({ ...prev, ...updatedProfileData }));
             setMessage('Perfil atualizado com sucesso!');
-        } catch (error) {
-            console.error("Erro ao atualizar o perfil:", error);
-            setMessage('Erro ao atualizar o perfil.');
+        } catch (err) {
+            console.error("Erro ao atualizar o perfil:", err);
+            setError('Erro ao atualizar o perfil.');
         }
     };
 
-    const handleProfilePicClick = () => {
-        if (!uploading) {
-            fileInputRef.current.click();
-        }
-    };
-
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file || !user) return;
-
-        setUploading(true);
+    const handlePasswordReset = async () => {
         setMessage('');
-
+        setError('');
         try {
-            // Cria uma referência para o ficheiro no Firebase Storage
-            const storageRef = ref(storage, `profilePictures/${user.uid}`);
-            // Faz o upload do ficheiro
-            await uploadBytes(storageRef, file);
-            // Obtém o URL de download da imagem
-            const newPhotoURL = await getDownloadURL(storageRef);
-
-            // Atualiza o perfil no Firebase Authentication
-            await updateProfile(auth.currentUser, { photoURL: newPhotoURL });
-
-            // Atualiza o URL da foto no Firestore
-            const userDocRef = doc(db, "users", user.uid);
-            await setDoc(userDocRef, { photoURL: newPhotoURL }, { merge: true });
-            
-            // Atualiza o estado local para a UI refletir a mudança instantaneamente
-            if (setUserProfile) {
-                setUserProfile(prev => ({...prev, photoURL: newPhotoURL}));
-            }
-            
-            setMessage('Foto de perfil atualizada com sucesso!');
-
-        } catch (error) {
-            console.error("Erro ao carregar a foto:", error);
-            setMessage('Erro ao carregar a foto. Tente novamente.');
-        } finally {
-            setUploading(false);
+            await sendPasswordResetEmail(auth, user.email);
+            setMessage('Link de redefinição enviado para o seu e-mail!');
+        } catch (err) {
+            setError('Não foi possível enviar o e-mail de redefinição.');
         }
     };
 
     if (!userProfile) {
-        return <div style={{textAlign: 'center', marginTop: '150px'}}>A carregar perfil...</div>;
+        return <div style={{textAlign: 'center', marginTop: '150px'}}>Carregando perfil...</div>;
     }
+
+    const memberSince = new Date(user.metadata.creationTime).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+    });
 
     return (
         <>
             <section className="page-header">
-                <div className="container">
-                    <h1>Meu Perfil</h1>
-                </div>
+                <div className="container"><h1>Meu Perfil</h1></div>
             </section>
-            <div className="container" style={{maxWidth: '800px', margin: '0 auto 80px auto'}}>
-                <div className="profile-container">
-                    <div className="profile-header">
-                        <div className="profile-pic-container" onClick={handleProfilePicClick}>
-                            {/* CORREÇÃO: Usar userProfile?.photoURL para garantir que a foto mais recente é exibida */}
-                            <img src={userProfile?.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`} alt="Foto de Perfil" className="profile-pic" />
-                            <div className="profile-pic-overlay">
-                                {uploading ? <span>A carregar...</span> : <FaPencilAlt size={30} />}
+            <div className="container" style={{maxWidth: '1000px', margin: '0 auto 80px auto'}}>
+                <div className="profile-grid-container">
+                    <div className="profile-main-card">
+                         <div className="profile-header">
+                            {/* IMAGEM PADRÃO ALTERADA E FUNCIONALIDADE DE UPLOAD REMOVIDA */}
+                            <div className="profile-pic-container">
+                                <img src={userProfile?.photoURL || process.env.PUBLIC_URL + '/images/perfil.png'} alt="Foto de Perfil" className="profile-pic" />
                             </div>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                                accept="image/png, image/jpeg"
-                            />
+                            <h2>{userProfile.displayName}</h2>
+                            <p>{user.email}</p>
+                            <p className="member-since">Membro desde {memberSince}</p>
                         </div>
-
-                        <h2>{userProfile.displayName}</h2>
-                        <p>{user.email}</p>
-                        <span className={`status-badge ${userProfile.isVip ? 'vip' : 'free'}`}>
-                            {userProfile.isVip ? 'Plano VIP' : 'Plano Gratuito'}
-                        </span>
+                        <form className="profile-form" onSubmit={handleSave}>
+                            <div className="form-group">
+                                <label htmlFor="displayName">Nome de Exibição</label>
+                                <input type="text" id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="phone">Telefone</label>
+                                <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(XX) XXXXX-XXXX"/>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="address">Morada</label>
+                                <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Sua cidade, estado"/>
+                            </div>
+                            <button type="submit" className="btn btn-primary">Guardar Alterações</button>
+                        </form>
                     </div>
-                    <form className="profile-form" onSubmit={handleSave}>
-                        <div className="form-group">
-                            <label htmlFor="displayName">Nome de Exibição</label>
-                            <input type="text" id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+
+                    <div className="profile-side-cards">
+                        <div className="side-card">
+                            <h4>Meu Plano</h4>
+                            <span className={`status-badge ${userProfile.isVip ? 'vip' : 'free'}`}>
+                                {userProfile.isVip ? 'Plano VIP' : 'Plano Gratuito'}
+                            </span>
+                            <p className="plan-description">
+                                {userProfile.isVip
+                                    ? "Você tem acesso a todas as ferramentas e sinais exclusivos da plataforma."
+                                    : "Faça o upgrade para o plano VIP e tenha acesso ilimitado a todas as nossas análises e ferramentas."
+                                }
+                            </p>
+                            {!userProfile.isVip && (
+                                <Link to="/planos" className="btn btn-primary" style={{width: '100%'}}>Seja VIP Agora</Link>
+                            )}
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="phone">Telefone</label>
-                            <input type="tel" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        <div className="side-card">
+                             <h4>Segurança</h4>
+                             <p className="plan-description">Mantenha sua conta segura. Se desejar, altere sua senha clicando no botão abaixo.</p>
+                             <button className="btn btn-secondary" style={{width: '100%'}} onClick={handlePasswordReset}>Alterar Senha</button>
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="address">Morada</label>
-                            <input type="text" id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
-                        </div>
-                        <button type="submit" className="btn btn-primary">Guardar Alterações</button>
-                        {message && <p className={`message ${message.includes('Erro') ? 'error' : 'success'}`} style={{display: 'block'}}>{message}</p>}
-                    </form>
-                    {!userProfile.isVip && (
-                        <div className="cta-vip">
-                            <h3>Aceda a todos os sinais!</h3>
-                            <p>Faça o upgrade para o plano VIP e tenha acesso ilimitado a todas as nossas análises e ferramentas exclusivas.</p>
-                            <Link to="/planos" className="btn btn-primary">Seja VIP</Link>
-                        </div>
-                    )}
+                         {(message || error) && (
+                            <div className={`message ${error ? 'error' : 'success'}`} style={{display: 'block', marginTop: '20px', textAlign: 'center'}}>
+                                {message || error}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </>
@@ -1040,66 +1079,183 @@ function ProfilePage() {
 }
 
 function VipSignalsPage() {
-    const [tipsData, setTipsData] = useState({ title: 'A carregar sinais VIP...', tips: [] });
+    const [signals, setSignals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
+        const parseSignalText = (textData) => {
+            const lines = textData.split('\n').map(line => line.trim()).filter(line => line);
+            const rawSignals = [];
+
+            let currentSignal = null;
+
+            lines.forEach(line => {
+                if (line.startsWith('🎯 PARTIDA:')) {
+                    if (currentSignal) rawSignals.push(currentSignal);
+                    currentSignal = { title: line.replace('🎯 PARTIDA:', '').trim(), content: [] };
+                } else if (currentSignal && !line.startsWith('---') && !line.startsWith('===')) {
+                    currentSignal.content.push(line);
+                }
+            });
+            if (currentSignal) rawSignals.push(currentSignal);
+
+            // Estruturar os dados de cada sinal
+            return rawSignals.map((signal, index) => {
+                const structuredSignal = {
+                    id: index,
+                    match: signal.title,
+                    profile: 'Não especificado',
+                    analysis: '',
+                    warning: '',
+                    betSuggestion: 'Mercado de Menos de 3.5 Gols.',
+                    metrics: {}
+                };
+
+                let readingMetrics = false;
+                signal.content.forEach(line => {
+                    if (line.includes('PERFIL ENCONTRADO:')) {
+                        structuredSignal.profile = line.split(':')[1].trim().replace(/"/g, '');
+                    } else if (line.includes('RESUMO DA ANÁLISE:')) {
+                        structuredSignal.analysis = line.split(':')[1].trim();
+                    } else if (line.includes('PONTO DE ATENÇÃO:')) {
+                        structuredSignal.warning = signal.content.slice(signal.content.indexOf(line) + 1).join(' ');
+                        readingMetrics = false;
+                    } else if (line.includes('MÉTRICAS CHAVE:')) {
+                        readingMetrics = true;
+                    } else if (readingMetrics) {
+                        const parts = line.split(':');
+                        if (parts.length > 1) {
+                            const key = parts[0].replace('-', '').trim();
+                            const value = parseFloat(parts[1]);
+                            if (!isNaN(value)) {
+                                structuredSignal.metrics[key] = value;
+                            }
+                        }
+                    }
+                });
+
+                return structuredSignal;
+            });
+        };
+        
         const loadTips = async () => {
             try {
                 const response = await fetch(process.env.PUBLIC_URL + '/dicas-da-semana.txt');
                 if (!response.ok) throw new Error('Arquivo de sinais não encontrado.');
                 const textData = await response.text();
                 
-                const lines = textData.split('\n').map(line => line.trim()).filter(line => line);
-                const titleLine = lines.find(line => line.startsWith('--- DICAS E ANÁLISE')) || 'Dicas da Semana';
-                const title = titleLine.replace('---', '').trim();
-                
-                const tips = [];
-                let currentTip = null;
-
-                lines.forEach(line => {
-                    if (line.startsWith('🎯 PARTIDA:')) {
-                        if (currentTip) tips.push(currentTip);
-                        currentTip = { match: line.replace('🎯 PARTIDA:', '').trim(), details: [] };
-                    } else if (currentTip && line.length > 0 && !line.startsWith('===') && !line.startsWith('---')) {
-                        currentTip.details.push(line);
-                    }
-                });
-                if (currentTip) tips.push(currentTip);
-                
-                setTipsData({ title: 'Sinais VIP Exclusivos', tips });
+                const parsedSignals = parseSignalText(textData);
+                setSignals(parsedSignals);
             } catch (error) {
                 console.error("Erro ao carregar sinais VIP:", error);
-                setTipsData({ title: 'Erro ao Carregar Sinais', tips: [] });
+            } finally {
+                setLoading(false);
             }
         };
         loadTips();
     }, []);
 
+    const handleCopy = (text) => {
+        navigator.clipboard.writeText(text);
+        alert('Aposta copiada para a área de transferência!');
+    };
+
+    const filteredSignals = signals.filter(signal =>
+        signal.match.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Componente para a barra de progresso
+    const MetricBar = ({ label, value, max = 5 }) => {
+        const percentage = (value / max) * 100;
+        let barColor = 'var(--color-primary)';
+        if (percentage > 66) barColor = '#FF3860'; // Vermelho para valores altos
+        else if (percentage > 33) barColor = '#FFD700'; // Amarelo para médios
+        
+        return (
+            <div className="metric-bar">
+                <div className="metric-label">
+                    <span>{label}</span>
+                    <span>{value.toFixed(2)}</span>
+                </div>
+                <div className="progress-container">
+                    <div className="progress-bar" style={{ width: `${percentage}%`, backgroundColor: barColor }}></div>
+                </div>
+            </div>
+        );
+    };
+
+
     return (
         <>
-            <section className="page-header"><div className="container">
-                <h1>Sinais VIP</h1>
-                <p>Acesso completo a todas as análises geradas por nossa IA.</p>
-            </div></section>
-            <div className="container">
-                <div className="chat-container">
-                    <div className="chat-header">{tipsData.title}</div>
-                    <div className="chat-messages">
-                        {tipsData.tips.length > 0 ? (
-                            tipsData.tips.map((tip, index) => (
-                                <div key={index} className="chat-bubble">
-                                    <div className="match-title">{tip.match}</div>
-                                    <div className="match-details" dangerouslySetInnerHTML={{ __html: tip.details.join('<br />') }}></div>
-                                </div>
-                            ))
-                        ) : ( <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>Nenhum sinal VIP disponível no momento.</p> )}
+            <section className="page-header">
+                <div className="container">
+                    <h1>Sinais VIP</h1>
+                    <p>Acesso completo a todas as análises geradas por nossa IA.</p>
+                </div>
+            </section>
+            <div className="container" style={{ paddingBottom: '80px' }}>
+                <div className="controls-container">
+                    <div className="search-bar">
+                        <FaSearch />
+                        <input
+                            type="text"
+                            placeholder="Pesquisar por equipa ou liga..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="filters">
+                        <button className="control-btn active">Hoje</button>
+                        <button className="control-btn">Amanhã</button>
                     </div>
                 </div>
+
+                {loading ? (
+                    <p style={{ textAlign: 'center' }}>A carregar sinais...</p>
+                ) : (
+                    <div className="signals-grid">
+                        {filteredSignals.map(signal => (
+                            <div key={signal.id} className="signal-card">
+                                <div className="card-header">
+                                    <h3>{signal.match}</h3>
+                                    <span className="profile-badge">{signal.profile}</span>
+                                </div>
+                                <div className="card-body">
+                                    <div className="main-bet-suggestion">
+                                        <h4>Aposta Sugerida</h4>
+                                        <p>{signal.betSuggestion}</p>
+                                        <button className="copy-btn" onClick={() => handleCopy(`${signal.match} - ${signal.betSuggestion}`)}>
+                                            <FaCopy /> Copiar Aposta
+                                        </button>
+                                    </div>
+                                    <div className="metrics-container">
+                                        <h4>Métricas Chave</h4>
+                                        <MetricBar label="xG Total" value={signal.metrics['Expectativa de Gols (xG Total)'] || 0} max={4}/>
+                                        <MetricBar label="Pot. Ofensivo" value={signal.metrics['Potencial Ofensivo Combinado (PO)'] || 0} max={5}/>
+                                        <MetricBar label="Média Gols Sofridos" value={signal.metrics['Média de Gols Sofridos Combinada (MGS)'] || 0} max={4}/>
+                                    </div>
+                                </div>
+                                <div className="card-footer">
+                                    <details>
+                                        <summary>
+                                            Ver Análise Completa <FaChevronDown className="chevron-icon"/>
+                                        </summary>
+                                        <div className="analysis-content">
+                                            <p><strong>Resumo:</strong> {signal.analysis}</p>
+                                            <p><strong>Ponto de Atenção:</strong> {signal.warning}</p>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                 { !loading && filteredSignals.length === 0 && <p style={{textAlign: 'center', marginTop: '40px'}}>Nenhum sinal encontrado para a sua pesquisa.</p> }
             </div>
         </>
     );
 }
-
 function PlansPage() {
     return (
         <>
@@ -1125,6 +1281,297 @@ function PlansPage() {
         </>
     );
 }
+// --- PÁGINA DE GESTÃO DE BANCA COM LÓGICA DE PRIMEIRO ACESSO CORRIGIDA ---
+
+function BankrollManagerPage() {
+    const { user } = useAuth();
+    const [appState, setAppState] = useState({
+        bankroll: 100.00,
+        isSorosActive: false,
+        sorosStake: 0,
+        history: [],
+        pendingBet: null,
+    });
+    const [odd, setOdd] = useState(1.24);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); // Novo estado para erros
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const loadStateFromFirestore = async () => {
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+
+            setLoading(true);
+            setError(null); // Reseta o erro a cada nova tentativa
+            const docRef = doc(db, "bankrollManagement", user.uid);
+            
+            try {
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    // Usuário existente: carrega os dados
+                    const loadedState = docSnap.data();
+                    loadedState.pendingBet = null;
+                    setAppState(loadedState);
+                } else {
+                    // NOVO USUÁRIO: A conta não existe, então apenas prepara o estado padrão.
+                    // Isso é o comportamento esperado, não um erro.
+                    setAppState({
+                        bankroll: 100.00, isSorosActive: false, sorosStake: 0, history: [], pendingBet: null
+                    });
+                }
+            } catch (err) {
+                // ERRO REAL: Acontece se houver falha de conexão ou permissão.
+                console.error("Erro ao carregar dados do Firestore:", err);
+                setError("Não foi possível carregar seus dados. Verifique sua conexão e as regras de segurança do Firebase.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadStateFromFirestore();
+    }, [user]);
+
+    // ... (O restante de todas as outras funções: saveStateToFirestore, getNextStake, handleAddBet, resolveBet, etc., continuam EXATAMENTE IGUAIS) ...
+    const saveStateToFirestore = async (newState) => {
+        if (!user) return;
+        const stateToSave = { ...newState, pendingBet: null };
+        try {
+            const docRef = doc(db, "bankrollManagement", user.uid);
+            await setDoc(docRef, stateToSave);
+        } catch (error) {
+            console.error("Erro ao salvar o estado:", error);
+            alert("Houve um erro ao salvar seu progresso.");
+        }
+    };
+    
+    const ASSERTIVENESS = 0.807;
+    const ODD_THRESHOLD = 1.27;
+    const FIXED_STAKE_PERCENTAGE = 0.05;
+
+    const getNextStake = (currentOdd) => {
+        if (appState.isSorosActive) {
+            return { stake: appState.sorosStake, type: 'Soros Nv. 1' };
+        }
+        if (isNaN(currentOdd)) return { stake: 0, type: 'Inválido' };
+        if (currentOdd <= ODD_THRESHOLD) {
+            const stake = appState.bankroll * FIXED_STAKE_PERCENTAGE;
+            return { stake, type: `Stake Fixa (${(FIXED_STAKE_PERCENTAGE * 100).toFixed(1)}%)` };
+        } else {
+            const p = ASSERTIVENESS;
+            const b = currentOdd - 1;
+            const kellyFraction = (p * b - (1 - p)) / b;
+            if (kellyFraction <= 0) return { stake: 0, type: 'Kelly (EV-)' };
+            return { stake: appState.bankroll * kellyFraction, type: `Kelly (${(kellyFraction * 100).toFixed(2)}%)` };
+        }
+    };
+
+    const nextBetInfo = getNextStake(odd);
+
+    const handleAddBet = () => {
+        if (isNaN(odd) || odd <= 1) { alert('Insira uma odd válida.'); return; }
+        if (nextBetInfo.stake <= 0) { alert('A aposta não tem EV+. Nenhuma aposta será registrada.'); return; }
+        const newBet = { id: Date.now(), type: nextBetInfo.type, stake: nextBetInfo.stake, odd: odd };
+        setAppState(prev => ({ ...prev, pendingBet: newBet }));
+    };
+
+    const resolveBet = (isWin) => {
+        if (!appState.pendingBet) return;
+        const betData = appState.pendingBet;
+        const profit = isWin ? betData.stake * (betData.odd - 1) : -betData.stake;
+        const newBankroll = appState.bankroll + profit;
+        let newIsSorosActive = isWin && !appState.isSorosActive;
+        let newSorosStake = newIsSorosActive ? betData.stake + profit : 0;
+        const resolvedBet = { ...betData, profit, finalBankroll: newBankroll };
+        const newState = {
+            bankroll: newBankroll,
+            isSorosActive: newIsSorosActive,
+            sorosStake: newSorosStake,
+            history: [resolvedBet, ...appState.history],
+            pendingBet: null
+        };
+        setAppState(newState);
+        saveStateToFirestore(newState);
+    };
+    
+    const handleReset = () => {
+        if (window.confirm("ATENÇÃO: Isso apagará PERMANENTEMENTE todo o histórico e redefinirá a banca. Deseja continuar?")) {
+            const newState = {
+                bankroll: 100.00, isSorosActive: false, sorosStake: 0, history: [], pendingBet: null
+            };
+            setAppState(newState);
+            saveStateToFirestore(newState);
+            setOdd(1.24);
+        }
+    };
+    
+    const handleExport = () => {
+        const stateToExport = { ...appState, pendingBet: null };
+        if (stateToExport.history.length === 0) { alert("Não há histórico para exportar."); return; }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stateToExport));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `historico_banca_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const handleImport = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                if ('bankroll' in importedState && 'history' in importedState) {
+                    if (window.confirm('Isso irá substituir o histórico atual. Deseja continuar?')) {
+                        importedState.pendingBet = null;
+                        setAppState(importedState);
+                        saveStateToFirestore(importedState);
+                        alert('Histórico importado com sucesso!');
+                    }
+                } else { throw new Error("Formato inválido."); }
+            } catch (error) { alert('Erro ao carregar o arquivo.'); }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+
+    // Renderização condicional da UI
+    const renderContent = () => {
+        if (loading) {
+            return <div className="bm-card" style={{textAlign: 'center', padding: '50px 0'}}>Carregando seus dados...</div>;
+        }
+        if (error) {
+            return <div className="bm-card" style={{textAlign: 'center', padding: '50px 0', color: 'var(--color-error)'}}>{error}</div>;
+        }
+        return (
+            <>
+                <div className="bm-grid-container">
+                     {/* ... Controles, Resumo, etc. ... */}
+                     <div className="bm-card">
+                        <h2 className="bm-card-title">Controles</h2>
+                        <div className="form-group">
+                            <label>Banca Atual (R$)</label>
+                            <input type="number" value={appState.bankroll.toFixed(2)} onChange={(e) => setAppState(prev => ({...prev, bankroll: parseFloat(e.target.value) || 0, isSorosActive: false, sorosStake: 0}))} onBlur={() => saveStateToFirestore(appState)} />
+                        </div>
+                        <div className="form-group">
+                            <label>Odd da Aposta</label>
+                            <input type="number" value={odd} step="0.01" onChange={(e) => setOdd(parseFloat(e.target.value) || 0)} />
+                        </div>
+                        <div className="fixed-params">
+                            <h3>Parâmetros Fixos</h3>
+                            <div className="param-item"><span>Assertividade:</span><strong>80.7%</strong></div>
+                            <div className="param-item"><span>Odd Limite (Kelly):</span><strong>1.27</strong></div>
+                            <div className="param-item"><span>Stake Fixa (Odds Baixas):</span><strong>5%</strong></div>
+                        </div>
+                        <button className="btn btn-primary" onClick={handleAddBet} disabled={!!appState.pendingBet}>
+                            {appState.pendingBet ? 'Aguardando Resultado...' : 'Registrar Nova Aposta'}
+                        </button>
+                    </div>
+                    <div className="bm-card">
+                        <h2 className="bm-card-title">Próxima Entrada</h2>
+                        <div className="bm-summary">
+                            <div className="bm-status" style={{color: appState.isSorosActive ? '#e67e22' : 'var(--color-text-secondary)'}}>
+                                {appState.isSorosActive ? 'Status: Soros Nível 1' : `Status: ${nextBetInfo.type}`}
+                            </div>
+                            <label>Valor Recomendado:</label>
+                            <div className="bm-next-stake">R$ {nextBetInfo.stake.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    {appState.pendingBet && (
+                        <div className="bm-card bm-pending-card">
+                            <h2 className="bm-card-title">Resolver Aposta Pendente</h2>
+                            <p>Tipo: <strong>{appState.pendingBet.type} @ {appState.pendingBet.odd.toFixed(2)}</strong></p>
+                            <p>Stake: <strong>R$ {appState.pendingBet.stake.toFixed(2)}</strong></p>
+                            <div className="bm-resolve-buttons">
+                                <button className="btn-success" onClick={() => resolveBet(true)}>Green</button>
+                                <button className="btn-danger" onClick={() => resolveBet(false)}>Red</button>
+                            </div>
+                        </div>
+                    )}
+                    <div className="bm-card bm-io-controls">
+                        <button className="control-btn" onClick={handleExport}>Exportar</button>
+                        <button className="control-btn" onClick={() => fileInputRef.current.click()}>Importar</button>
+                        <input type="file" ref={fileInputRef} accept=".json" onChange={handleImport} style={{display: 'none'}} />
+                        <button className="control-btn btn-danger" onClick={handleReset}>Reiniciar Tudo</button>
+                    </div>
+                </div>
+                <div className="bm-card" style={{marginTop: '20px'}}>
+                    <h2 className="bm-card-title">Histórico de Apostas</h2>
+                    <div className="bm-history-table-container">
+                        <table className="bm-history-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Tipo</th><th>Stake (R$)</th><th>Odd</th><th>Resultado</th><th>Lucro/Prej. (R$)</th><th>Banca Final (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {appState.history.length > 0 ? (
+                                    appState.history.map(bet => (
+                                        <tr key={bet.id} className={bet.profit > 0 ? 'bm-green' : 'bm-red'}>
+                                            <td>{appState.history.length - appState.history.indexOf(bet)}</td>
+                                            <td>{bet.type}</td>
+                                            <td>{bet.stake.toFixed(2)}</td>
+                                            <td>{bet.odd.toFixed(2)}</td>
+                                            <td><strong>{bet.profit > 0 ? 'Green' : 'Red'}</strong></td>
+                                            <td>{bet.profit > 0 ? '+' : ''}{bet.profit.toFixed(2)}</td>
+                                            <td>{bet.finalBankroll.toFixed(2)}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr><td colSpan="7">Nenhum registro no histórico. Comece sua primeira aposta!</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </>
+        );
+    };
+
+    return (
+        <>
+            <section className="page-header">
+                <div className="container">
+                    <h1>Gestão de Banca VIP</h1>
+                    <p>Sua ferramenta exclusiva para aplicar nossa estratégia e acompanhar seus resultados.</p>
+                </div>
+            </section>
+            <div className="container" style={{maxWidth: '1000px', margin: '0 auto 80px auto'}}>
+                <details className="bm-explanation-box">
+                    <summary>
+                        <h3>Como Usar a Gestão de Banca? (Clique para expandir)</h3>
+                        <FaChevronDown className="chevron-icon"/>
+                    </summary>
+                    <div className="explanation-content">
+                        <h4>O Método Híbrido</h4>
+                        <p>Nossa gestão combina duas estratégias para maximizar lucros e proteger sua banca:</p>
+                        <ul>
+                            <li><strong>Stake Fixa (Odds ≤ 1.27):</strong> Para jogos de altíssima probabilidade, usamos uma stake fixa de 5% sobre a banca para garantir consistência.</li>
+                            <li><strong>Critério de Kelly (Odds > 1.27):</strong> Para odds de maior valor, a ferramenta calcula a porcentagem ideal da banca a ser apostada, baseada no Valor Esperado Positivo (EV+).</li>
+                            <li><strong>Método Soros:</strong> Após um "Green", a ferramenta entra em "Modo Soros", onde a próxima stake será o valor da aposta anterior somado ao lucro, potencializando ganhos em sequências de vitórias. Após um "Red" ou um "Green" em modo Soros, o ciclo volta ao normal.</li>
+                        </ul>
+                        <h4>Passo a Passo da Ferramenta</h4>
+                        <ol>
+                            <li><strong>Banca e Odd:</strong> Confira sua banca e insira a odd da aposta.</li>
+                            <li><strong>Verifique a Stake:</strong> O quadro "Próxima Entrada" mostrará o valor recomendado.</li>
+                            <li><strong>Registre a Aposta:</strong> Clique em "Registrar". A aposta ficará pendente.</li>
+                            <li><strong>Resolva o Resultado:</strong> Após o jogo, clique em "Green" ou "Red" para salvar o resultado.</li>
+                        </ol>
+                    </div>
+                </details>
+                
+                {renderContent()}
+                
+            </div>
+        </>
+    );
+}
 
 // --- ROTEADOR PRINCIPAL ---
 export default function App() {
@@ -1140,6 +1587,7 @@ export default function App() {
             <Route path="/sinais-gratuitos" element={<AuthenticatedRoute><FreeSignalsPage /></AuthenticatedRoute>} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/planos" element={<PlansPage />} />
+	    <Route path="/gestao-de-banca" element={<VipRoute><BankrollManagerPage /></VipRoute>} />
             {/* Rotas Protegidas */}
             <Route path="/perfil" element={<AuthenticatedRoute><ProfilePage /></AuthenticatedRoute>} />
             <Route path="/sinais-vip" element={<VipRoute><VipSignalsPage /></VipRoute>} />
@@ -1149,3 +1597,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
