@@ -30,15 +30,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
 // --- CONFIGURAÇÃO DO FIREBASE ---
-import { firebaseConfig } from './firebase'; 
-
-// Inicializa o Firebase
-// NOTA: Certifique-se de que o seu ficheiro 'firebase.js' exporta uma configuração
-// que inclui a propriedade 'storageBucket' para o upload de ficheiros funcionar.
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app); // Inicializa o Storage
+import { auth, db, storage } from './firebase';
 
 
 // Registro dos componentes do Chart.js
