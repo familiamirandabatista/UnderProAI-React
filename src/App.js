@@ -210,7 +210,7 @@ function Header() {
 
     return (
         <header id="main-header">
-            <div className="container">
+            <div className="header-container">
                 <a href="/#" onClick={handleHomeClick}>
                     <img src={process.env.PUBLIC_URL + '/images/logo.png'} alt="UnderPro AI Logo" className="logo" />
                 </a>
@@ -322,10 +322,20 @@ function Layout({ children }) {
 
 // --- PÁGINAS ---
 
+/* CÓDIGO NOVO - HomePage com Botão Inteligente */
 function HomePage() {
+    // ALTERADO: Pega também o perfil do usuário para checar se é VIP
+    const { user, userProfile } = useAuth(); 
     const heroStyle = {
         backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.8), rgba(18, 18, 18, 1)), url('${process.env.PUBLIC_URL}/images/hero-background.png')`
     };
+
+    // ADICIONADO: Lógica para definir o link do botão
+    let heroButtonLink = '/cadastro'; // Padrão para usuário deslogado
+    if (user) {
+        // Se o usuário está logado, verifica se é VIP
+        heroButtonLink = userProfile?.isVip ? '/sinais-vip' : '/planos';
+    }
 
     return (
         <>
@@ -333,7 +343,9 @@ function HomePage() {
                 <div className="container">
                     <h1>Decifre o Código do Jogo.</h1>
                     <p>A UnderPro utiliza um método analítico puramente matemático para revelar as oportunidades ocultas no mercado de Under 3.5 gols, focando naquilo que nunca mente: os números.</p>
-                    <Link to="/cadastro" className="btn btn-primary">Começar a Lucrar com Dados</Link>
+                    
+                    {/* ALTERADO: O texto foi atualizado e o link agora é dinâmico */}
+                    <Link to={heroButtonLink} className="btn btn-primary">Começar a Usar o UnderPro AI</Link>
                 </div>
             </section>
             
@@ -391,7 +403,6 @@ function HomePage() {
                             </div>
                         </div>
                     </div>
-                    {/* O restante da seção de simulação já está alinhado com a estratégia e não precisa de mudanças */}
                     <div className="strategy-example">
                         <h3>Simulação Prática: 20 Apostas</h3>
                         <p className="simulation-subtitle">Veja a diferença da gestão num cenário de curto prazo com banca de R$1.000, considerando uma odd média de 1.28 (valor comum em nossas entradas).</p>
@@ -467,12 +478,23 @@ function HomePage() {
                     </div>
                 </div>
             </section>
-
+            
             <section id="cta" className="section">
                 <div className="container">
                     <h2 className="section-title">Pronto para Lucrar com Matemática?</h2>
-                    <p className="section-subtitle">Junte-se a centenas de investidores que estão usando a frieza dos números para construir um patrimônio. O acesso aos primeiros sinais é gratuito e imediato.</p>
-                    <Link to="/cadastro" className="btn btn-primary">Criar Conta Gratuita</Link>
+                    
+                    <p className="section-subtitle">
+                        {user 
+                            ? "Acesse agora nossa área de membros VIP e confira as análises mais recentes."
+                            : "Junte-se a centenas de investidores que estão usando a frieza dos números para construir um patrimônio. O acesso aos primeiros sinais é gratuito e imediato."
+                        }
+                    </p>
+                    
+                    {user ? (
+                        <Link to="/sinais-vip" className="btn btn-primary">Acompanhar Sinais VIP</Link>
+                    ) : (
+                        <Link to="/cadastro" className="btn btn-primary">Criar Conta Gratuita</Link>
+                    )}
                 </div>
             </section>
         </>
@@ -703,13 +725,13 @@ function ResetPasswordPage() {
     );
 }
 
+/* CÓDIGO NOVO - FreeSignalsPage */
 function FreeSignalsPage() {
-    // 1. O estado agora é mais simples, apenas para guardar os sinais
+    const { userProfile } = useAuth(); // ADICIONADO: Pega o perfil do usuário
     const [signals, setSignals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 2. O useEffect foi reescrito para buscar dados do Firestore
     useEffect(() => {
         const loadFreeSignals = async () => {
             setLoading(true);
@@ -717,20 +739,14 @@ function FreeSignalsPage() {
             try {
                 const db = getFirestore();
                 const signalsCollection = collection(db, 'signals');
-                
-                // Esta é a consulta segura: peça ao Firestore apenas os documentos
-                // onde o campo 'isFree' é igual a 'true'.
-                // As regras de segurança que criamos garantirão que esta consulta funcione
-                // para qualquer usuário logado.
                 const q = query(signalsCollection, where("isFree", "==", true));
 
                 const querySnapshot = await getDocs(q);
                 
-                // Mapeia os resultados para o formato que o componente espera
                 const freeSignals = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     match: doc.data().match,
-                    analysis: doc.data().analysis, // Usaremos o campo 'analysis' para os detalhes
+                    analysis: doc.data().analysis,
                 }));
                 
                 setSignals(freeSignals);
@@ -744,9 +760,8 @@ function FreeSignalsPage() {
         };
 
         loadFreeSignals();
-    }, []); // O array vazio [] significa que este efeito roda apenas uma vez
+    }, []);
 
-    // 3. O JSX foi ajustado para renderizar os novos dados e estados
     return (
         <>
             <section className="page-header">
@@ -766,7 +781,6 @@ function FreeSignalsPage() {
                             signals.map(signal => (
                                 <div key={signal.id} className="chat-bubble">
                                     <div className="match-title">{signal.match}</div>
-                                    {/* Exibimos o campo 'analysis' diretamente */}
                                     <div className="match-details">{signal.analysis}</div>
                                 </div>
                             ))
@@ -774,9 +788,14 @@ function FreeSignalsPage() {
                            !loading && <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>Nenhuma dica gratuita disponível no momento.</p>
                         )}
                     </div>
-                    <div className="chat-footer">
-                        <p>Para acesso a todas as análises e ferramentas, <Link to="/planos" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>torne-se VIP</Link>.</p>
-                    </div>
+
+                    {/* --- ALTERAÇÃO APLICADA AQUI --- */}
+                    {/* Só mostra o rodapé se o usuário NÃO for VIP */}
+                    {!userProfile?.isVip && (
+                         <div className="chat-footer">
+                            <p>Para acesso a todas as análises e ferramentas, <Link to="/planos" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>torne-se VIP</Link>.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
@@ -784,6 +803,7 @@ function FreeSignalsPage() {
 }
 
 function DashboardPage() {
+    const { userProfile } = useAuth(); // ADICIONADO: Pega o perfil do usuário
     const [allData, setAllData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [stats, setStats] = useState({ total: 0, greens: 0, reds: 0, rate: '0.00%' });
@@ -791,6 +811,7 @@ function DashboardPage() {
     const [currentYear, setCurrentYear] = useState('all');
     const [chartData, setChartData] = useState(null);
 
+    // ... (o resto do código useEffect permanece o mesmo)
     useEffect(() => {
         const parseData = (text) => {
             const cleanedText = text.replace(/--- RELATÓRIO COMPLETO DE BACKTEST V18.18 ---/g, '').replace(/RODADAS ANALISADAS: \d+ a \d+/g, '').replace(/-------------------------------------------/g, '').replace(/Total de Entradas \(Aptas\): \d+/g, '').replace(/Total de Greens: \d+/g, '').replace(/Total de Reds: \d+/g, '').replace(/Assertividade: \d+\.\d+%?/g, '');
@@ -934,25 +955,23 @@ function DashboardPage() {
                                     }
                                 }
                             },
-                            // --- ESTA É A NOVA CONFIGURAÇÃO DE ZOOM ---
                             zoom: {
                                 pan: { 
-                                    enabled: true,      // Habilita o "arrastar"
-                                    mode: 'x',          // Arrastar apenas no eixo horizontal
+                                    enabled: true,
+                                    mode: 'x',
                                     threshold: 5,       
                                 },
                                 zoom: { 
-                                    wheel: { enabled: true }, // Zoom com a roda do mouse
-                                    pinch: { enabled: true }, // Zoom com gesto de pinça (mobile)
-                                    mode: 'x'                 // Zoom apenas no eixo horizontal
+                                    wheel: { enabled: true },
+                                    pinch: { enabled: true },
+                                    mode: 'x'
                                 }
                             },
-                            // --- ESTA É A NOVA CONFIGURAÇÃO DE "SUAVIZAÇÃO" ---
                             decimation: { 
-                                enabled: true,          // Habilita a otimização
-                                algorithm: 'lttb',      // Algoritmo que mantém a forma do gráfico
-                                samples: 100,           // Máximo de pontos a exibir quando sem zoom
-                                threshold: 150          // Ativa apenas para gráficos com mais de 150 pontos
+                                enabled: true,
+                                algorithm: 'lttb',
+                                samples: 100,
+                                threshold: 150
                             }
                         },
                         scales: {
@@ -961,11 +980,16 @@ function DashboardPage() {
                         }
                     }} /> : <p style={{textAlign: 'center'}}>Carregando dados do gráfico...</p>}
                 </div>
-                <div style={{textAlign: 'center', marginTop: '40px'}}>
-                    <h3 style={{fontSize: '1.5rem', marginBottom: '16px'}}>Gostou dos números?</h3>
-                    <p style={{color: 'var(--color-text-secondary)', marginBottom: '24px'}}>Torne-se VIP agora e tenha acesso a todas as entradas!!</p>
-                    <Link to="/cadastro" className="btn btn-primary">Tornar-se VIP</Link>
-                </div>
+
+                {/* --- ALTERAÇÃO APLICADA AQUI --- */}
+                {/* Só mostra este bloco se o usuário NÃO for VIP */}
+                {!userProfile?.isVip && (
+                    <div style={{textAlign: 'center', marginTop: '40px'}}>
+                        <h3 style={{fontSize: '1.5rem', marginBottom: '16px'}}>Gostou dos números?</h3>
+                        <p style={{color: 'var(--color-text-secondary)', marginBottom: '24px'}}>Torne-se VIP agora e tenha acesso a todas as entradas!!</p>
+                        <Link to="/planos" className="btn btn-primary">Tornar-se VIP</Link>
+                    </div>
+                )}
             </div>
         </>
     );

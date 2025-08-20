@@ -50,23 +50,26 @@ body.scrolled #main-header {
     backdrop-filter: blur(10px);
 }
 
-#main-header .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .logo {
-    /* CORREÇÃO: Aumenta o tamanho do logo */
-    height: 60px;
+    /* ALTERAÇÃO: Aumenta drasticamente o tamanho do logo */
+    height: 150px; /* Aumentado para um tamanho de grande impacto */
     width: auto;
     transition: all 0.3s ease;
 }
 
 body.scrolled .logo {
-    height: 45px;
+    /* ALTERAÇÃO: Ajusta o tamanho do logo ao rolar a página */
+    height: 100px; /* Tamanho reduzido, mas ainda grande */
 }
 
+.header-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Isso cola a logo à esquerda e o menu à direita */
+    align-items: center;
+    padding: 0 40px; /* Espaçamento para não colar nas bordas da tela */
+    box-sizing: border-box; /* Garante que o padding não cause problemas de largura */
+}
 
 #main-nav ul {
     list-style: none;
@@ -212,6 +215,7 @@ footer .container {
     background-position: center;
     color: var(--color-text-primary);
     transition: padding-top 0.3s ease;
+    position: relative; /* Linha adicionada para posicionar o degradê */
 }
 
 body.scrolled #home-hero {
@@ -238,7 +242,7 @@ body.scrolled #home-hero {
     border-bottom: 1px solid var(--color-border);
     position: relative;
     overflow: hidden;
-    background-color: var(--color-background); /* Garante que as seções tenham o fundo escuro sólido por baixo da textura */
+    /* A linha 'background-color' foi removida para permitir que o fundo do body apareça */
 }
 
 .section-title {
@@ -1455,4 +1459,16 @@ main.auth-main {
 .chart-wrapper {
     position: relative;
     height: 100%;
+}
+
+/* ADICIONAL: Degradê para suavizar a transição da primeira seção */
+#home-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px; /* Altura do degradê, ajuste se necessário */
+    background: linear-gradient(to bottom, transparent, var(--color-background));
+    pointer-events: none; /* Garante que o degradê não interfira com o mouse */
 }
