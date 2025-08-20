@@ -1,5 +1,6 @@
 import zoomPlugin from 'chartjs-plugin-zoom';
 import Hammer from 'hammerjs';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { FaHome, FaChartLine, FaBroadcastTower, FaCrown, FaHistory, FaUserCircle, FaPencilAlt, FaCopy, FaSearch, FaChevronDown, FaBars, FaTimes } from 'react-icons/fa';
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
@@ -22,14 +23,9 @@ import {
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     sendPasswordResetEmail,
-    GoogleAuthProvider,
-    signInWithRedirect,
-    getRedirectResult,
     signOut,
     updateProfile
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
-// Imports do Firebase Storage adicionados
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
@@ -43,7 +39,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app); // Inicializa o Storage
-const googleProvider = new GoogleAuthProvider();
 
 
 // Registro dos componentes do Chart.js
@@ -279,6 +274,12 @@ function Footer() {
             <div className="footer-background" style={footerBgStyle}></div>
             <div className="container">
                 <p>&copy; {new Date().getFullYear()} UnderPro AI. Todos os direitos reservados.</p>
+                {/* LINK NOVO ADICIONADO AQUI */}
+                <p style={{marginTop: '8px', fontSize: '0.9rem'}}>
+                    <Link to="/politica-de-privacidade" style={{color: 'var(--color-text-secondary)', textDecoration: 'none'}}>
+                        Política de Privacidade e Jogo Responsável
+                    </Link>
+                </p>
             </div>
         </footer>
     );
@@ -330,32 +331,32 @@ function HomePage() {
         <>
             <section id="home-hero" style={heroStyle}>
                 <div className="container">
-                    <h1>Aposte com Dados, Não com Achismos.</h1>
-                    <p>A UnderPro AI utiliza inteligência artificial para analisar milhares de dados e encontrar as melhores oportunidades no mercado de Under 3.5 gols.</p>
-                    <Link to="/cadastro" className="btn btn-primary">Criar Conta Gratuita</Link>
+                    <h1>Decifre o Código do Jogo.</h1>
+                    <p>A UnderPro utiliza um método analítico puramente matemático para revelar as oportunidades ocultas no mercado de Under 3.5 gols, focando naquilo que nunca mente: os números.</p>
+                    <Link to="/cadastro" className="btn btn-primary">Começar a Lucrar com Dados</Link>
                 </div>
             </section>
             
             <section id="features" className="section">
                 <div className="container">
-                    <h2 className="section-title">Uma Plataforma Completa</h2>
-                    <p className="section-subtitle">Nós não entregamos apenas dicas. Oferecemos as ferramentas e o conhecimento para você se tornar um investidor esportivo de sucesso.</p>
+                    <h2 className="section-title">Uma Plataforma de Lucro a Longo Prazo</h2>
+                    <p className="section-subtitle">Nós não damos dicas. Nós entregamos um sistema validado matematicamente para transformar você em um investidor esportivo com resultados consistentes.</p>
                     <div className="features-grid">
                         <div className="feature-card">
                             <div className="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10M18 20V4M6 20V16"/></svg></div>
-                            <h3>Dados vs. Achismo</h3>
-                            <p>Nossa IA analisa milhares de pontos de dados para identificar padrões que o olho humano não vê. Adeus, "feeling". Olá, estatística.</p>
+                            <h3>Matemática vs. Emoção</h3>
+                            <p>Nosso método estatístico cruza milhares de pontos de dados para identificar padrões invisíveis ao olho humano. Adeus, "achismo". Olá, matemática de precisão.</p>
                         </div>
                         <div className="feature-card">
                             <div className="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div>
-                            <h3>Transparência Total</h3>
-                            <p>Mostramos nosso histórico de performance de forma agregada. Acreditamos que a confiança se constrói com resultados verificáveis.</p>
-                            <Link to="/dashboard" className="btn btn-secondary" style={{marginTop: '20px'}}>Veja Agora Mesmo</Link>
+                            <h3>Transparência Radical</h3>
+                            <p>Confiança se constrói com resultados. Aqui, nosso histórico completo é um livro aberto, provando a eficácia do método em cenários reais.</p>
+                            <Link to="/dashboard" className="btn btn-secondary" style={{marginTop: '20px'}}>Veja os Números Reais</Link>
                         </div>
                         <div className="feature-card">
                             <div className="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-                            <h3>Educação Financeira</h3>
-                            <p>Mais do que dicas, ensinamos gestão de banca e a mentalidade de longo prazo. Formamos investidores, não apostadores.</p>
+                            <h3>Mentalidade de Investidor</h3>
+                            <p>Ensinamos você a dominar a gestão de banca e a psicologia do longo prazo. Nós criamos investidores, não apostadores impulsivos.</p>
                         </div>
                     </div>
                 </div>
@@ -363,31 +364,34 @@ function HomePage() {
 
             <section id="strategy-section" className="section">
                 <div className="container">
-                    <h2 className="section-title">Transforme Apostas em Lucro Inteligente</h2>
-                    <p className="section-subtitle">Chega de “achismos”. Aqui, a matemática trabalha a seu favor.</p>
+                    <h2 className="section-title">Transforme Apostas em Riqueza</h2>
+                    <p className="section-subtitle">Esqueça a sorte. Aqui, a matemática e a estratégia trabalham para multiplicar seu capital.</p>
                     <div className="strategy-content">
                         <div className="strategy-text">
-                            <h3>Como Funciona?</h3>
-                            <p>Com <strong>80,7% de assertividade</strong>, nosso método já é lucrativo a partir de odds de 1.25, mas é com odds estratégicas maiores que os lucros se multiplicam.</p>
-                            <p><strong>1. Análise da IA:</strong> A inteligência artificial da UnderPro AI seleciona os jogos com a maior probabilidade de resultarem em Menos de 3.5 golos (Under 3.5).</p>
-                            <p><strong>2. O Seu Controlo:</strong> Você recebe o sinal e decide quando e em qual odd entrar, mantendo total controlo sobre a sua aposta.</p>
-                            <p><strong>3. Geração de Valor:</strong> Cada decisão, combinada com a alta assertividade da nossa estratégia, gera Valor Esperado Positivo (EV+) real e consistente a longo prazo.</p>
-                        </div>
+                             <h3>Como o Método Funciona?</h3>
+                             <p>Com <strong>80,7% de assertividade</strong>, nosso sistema já é lucrativo a partir de odds mínimas (1.25), mas é com a gestão correta que a mágica do crescimento exponencial acontece.</p>
+                             <p><strong>1. Análise Multi-Perfilada:</strong> Nosso sistema executa uma varredura estatística profunda, selecionando apenas os jogos com a mais alta probabilidade matemática de terminarem em Menos de 3.5 gols.</p>
+                             <p><strong>2. O Seu Controle:</strong> Você recebe o sinal validado e mantém total controle sobre sua entrada, aplicando-o no momento que considerar ideal.</p>
+    	         <h3 style={{marginTop: '24px', color: 'var(--color-primary)'}}>A Vantagem Oculta: O Poder do Ao Vivo</h3>
+   	     <p>Muitos de nossos sinais apresentam odds pré-jogo entre 1.25 e 1.35. O lucro já existe aí. Mas o verdadeiro ouro está em saber esperar. Quando um gol acontece no início do jogo, o mercado reage exageradamente e as odds para 'Menos de 3.5 Gols' disparam.</p>
+    	          <p>É neste momento que nosso método brilha. Uma odd de 1.28 pode saltar para 1.45, 1.50 ou mais, <strong>multiplicando drasticamente o seu lucro potencial.</strong> Nossos membros VIP aprendem a identificar e capitalizar essas janelas de oportunidade de altíssimo valor.</p>
+   	  </div>
                         <div className="strategy-text">
-                            <h3>EV+ na Prática: Veja os Números</h3>
-                            <p>O Valor Esperado Positivo (EV+) é a base do lucro. Veja como a nossa assertividade se traduz em ganhos com diferentes odds:</p>
+                            <h3>EV+ na Prática: A Fonte do Lucro</h3>
+                            <p>O Valor Esperado Positivo (EV+) é o que separa profissionais de amadores. Veja como nossa assertividade se traduz em lucro real:</p>
                             <div className="ev-calculation">
                                 <h4>Odd 1.25:</h4>
-                                <p>Neste cenário, o lucro já existe, provando a robustez do método.</p>
-                                <code>EV+ = (0,807 × 1,25) - 1 = 0,00875 ≈ <strong>0,88% de lucro por aposta</strong></code>
+                                <p>Mesmo na odd mais baixa, o lucro já existe, provando a solidez inabalável do método.</p>
+                                <code>EV+ = (0,807 × 1,25) - 1 = 0,00875 ≈ <strong>0,88% de lucro por operação</strong></code>
                             </div>
                             <div className="ev-calculation">
                                 <h4>Odd 1.35:</h4>
-                                <p>Com uma odd ligeiramente maior, o retorno esperado aumenta exponencialmente.</p>
-                                <code>EV+ = (0,807 × 1,35) - 1 = 0,08945 ≈ <strong>8,95% de lucro por aposta</strong></code>
+                                <p>Com uma odd ligeiramente maior, o retorno esperado se torna explosivo.</p>
+                                <code>EV+ = (0,807 × 1,35) - 1 = 0,08945 ≈ <strong>8,95% de lucro por operação</strong></code>
                             </div>
                         </div>
                     </div>
+                    {/* O restante da seção de simulação já está alinhado com a estratégia e não precisa de mudanças */}
                     <div className="strategy-example">
                         <h3>Simulação Prática: 20 Apostas</h3>
                         <p className="simulation-subtitle">Veja a diferença da gestão num cenário de curto prazo com banca de R$1.000, considerando uma odd média de 1.28 (valor comum em nossas entradas).</p>
@@ -454,7 +458,7 @@ function HomePage() {
                             </div>
                         </div>
                         <div className="testimonial-card">
-                            <p>"Eu era cética no início, mas os resultados falam por si. A análise de dados da UnderPro AI é de outro nível. Recomendo fortemente."</p>
+                            <p>"Eu era cética no início, mas os resultados falam por si. A análise de dados da UnderPro é de outro nível. Recomendo fortemente."</p>
                             <div className="testimonial-author">
                                 <img src={process.env.PUBLIC_URL + '/images/foto-mulher.png'} alt="Foto de Maria R." />
                                 <div><h4>Maria R.</h4><span>Membro Premium</span></div>
@@ -466,28 +470,21 @@ function HomePage() {
 
             <section id="cta" className="section">
                 <div className="container">
-                    <h2 className="section-title">Pronto para Apostar com Inteligência?</h2>
-                    <p className="section-subtitle">Junte-se a centenas de investidores esportivos que estão usando dados para transformar seus resultados. O acesso às dicas gratuitas é imediato.</p>
+                    <h2 className="section-title">Pronto para Lucrar com Matemática?</h2>
+                    <p className="section-subtitle">Junte-se a centenas de investidores que estão usando a frieza dos números para construir um patrimônio. O acesso aos primeiros sinais é gratuito e imediato.</p>
                     <Link to="/cadastro" className="btn btn-primary">Criar Conta Gratuita</Link>
                 </div>
             </section>
         </>
     );
 }
+
 function LoginPage() {
-    const { user, loading } = useAuth(); // Usamos o estado global de autenticação
+    const { user, loading } = useAuth();
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
-    // Efeito que processa o retorno do Google, mas não faz mais nada
-    useEffect(() => {
-        getRedirectResult(auth).catch((error) => {
-            console.error("Erro no redirecionamento do Google:", error);
-            setError("Falha ao fazer login com o Google. Tente novamente.");
-        });
-    }, []);
 
     // Efeito que redireciona o usuário DEPOIS que o AuthProvider confirmar o login
     useEffect(() => {
@@ -506,18 +503,7 @@ function LoginPage() {
             setError("E-mail ou senha incorretos.");
         }
     };
-    
-    const handleGoogleLogin = async () => {
-        setError(''); // Limpa erros antigos
-        try {
-            await signInWithRedirect(auth, googleProvider);
-        } catch (error) {
-            setError("Não foi possível iniciar o login com o Google.");
-        }
-    };
 
-    // Enquanto o sistema central (AuthProvider) está a verificar o usuário, exibimos um loading.
-    // Isso é crucial para evitar o "loop".
     if (loading) {
         return <div style={{textAlign: 'center', marginTop: '150px'}}>Verificando autenticação...</div>;
     }
@@ -539,13 +525,76 @@ function LoginPage() {
                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Entrar</button>
                 {error && <p id="error-message" className="message error" style={{display: 'block'}}>{error}</p>}
             </form>
-            <div className="divider">OU</div>
-            <button onClick={handleGoogleLogin} className="btn btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" />
-                Entrar com Google
-            </button>
             <div className="switch-auth">Não tem uma conta? <Link to="/cadastro">Cadastre-se</Link></div>
         </div>
+    );
+}
+
+function PrivacyPolicyPage() {
+    return (
+        <>
+            <section className="page-header">
+                <div className="container">
+                    <h1>Política de Privacidade e Jogo Responsável</h1>
+                    <p>Nosso compromisso com sua segurança, privacidade e bem-estar.</p>
+                </div>
+            </section>
+            <div className="container" style={{maxWidth: '800px', margin: '0 auto 80px auto', color: 'var(--color-text-secondary)', lineHeight: '1.8'}}>
+                <h2 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>Visão Geral</h2>
+                <p>A UnderPro AI ("nós", "nosso") está empenhada em proteger a privacidade dos seus usuários ("você") e em promover um ambiente de apostas seguro e responsável. Esta política descreve como coletamos, usamos e protegemos suas informações pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018) do Brasil, e estabelece nossas diretrizes sobre o Jogo Responsável.</p>
+
+                <hr className="section-divider" />
+
+                <h3 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>1. Coleta e Uso de Dados</h3>
+                <p>Coletamos as seguintes informações para fornecer e aprimorar nossos serviços:</p>
+                <ul>
+                    <li><strong>Dados de Cadastro:</strong> Nome completo e endereço de e-mail, utilizados para criar e gerenciar sua conta.</li>
+                    <li><strong>Dados de Perfil (Opcionais):</strong> Número de telefone e morada, que você pode fornecer para personalizar sua experiência.</li>
+                    <li><strong>Dados de Uso da Ferramenta de Gestão:</strong> O histórico de apostas, valores de banca, stakes e odds que você insere na ferramenta de "Gestão de Banca" são armazenados de forma segura para seu uso exclusivo e não são acessados por nós para outros fins que não a funcionalidade da ferramenta.</li>
+                </ul>
+                <p>Utilizamos esses dados para: autenticar seu acesso, personalizar o conteúdo, processar transações (futuras), comunicar sobre a sua conta e fornecer suporte.</p>
+
+                <hr className="section-divider" />
+
+                <h3 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>2. Proteção e Armazenamento de Dados</h3>
+                <p>A segurança dos seus dados é nossa prioridade. Utilizamos a infraestrutura segura do Google Firebase para armazenar e proteger suas informações. Todos os dados são criptografados em trânsito e em repouso. O acesso aos dados é restrito e monitorado. Não compartilhamos suas informações pessoais com terceiros, exceto quando exigido por lei.</p>
+
+                <hr className="section-divider" />
+
+                <h3 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>3. Direitos do Usuário (LGPD)</h3>
+                <p>De acordo com a LGPD, você tem o direito de:</p>
+                <ul>
+                    <li><strong>Acessar:</strong> Solicitar o acesso aos dados que temos sobre você.</li>
+                    <li><strong>Retificar:</strong> Corrigir dados incompletos, inexatos ou desatualizados.</li>
+                    <li><strong>Excluir:</strong> Solicitar a exclusão de suas informações de nossa base de dados.</li>
+                </ul>
+                <p>Você pode gerenciar a maioria dos seus dados diretamente na sua página de "Perfil". Para outras solicitações, entre em contato conosco.</p>
+
+                <hr className="section-divider" />
+
+                <h3 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>4. Política de Jogo Responsável</h3>
+                <p>A UnderPro AI é uma ferramenta de análise estatística para fins de entretenimento e estudo. As apostas esportivas envolvem riscos financeiros e não devem ser vistas como uma fonte de renda garantida. Promovemos o jogo responsável através das seguintes diretrizes:</p>
+                <ul>
+                    <li><strong>Maioridade:</strong> Nossos serviços são destinados exclusivamente a maiores de 18 anos.</li>
+                    <li><strong>Autocontrole:</strong> Aposte apenas o que você pode perder. Nunca persiga perdas e estabeleça limites claros de tempo e dinheiro.</li>
+                    <li><strong>Consciência:</strong> Não aposte sob a influência de álcool, drogas ou quando estiver emocionalmente abalado (estressado, deprimido).</li>
+                    <li><strong>Não é um Investimento:</strong> Trate as apostas como uma despesa de entretenimento, não como uma forma de ganhar a vida ou de resolver problemas financeiros.</li>
+                </ul>
+                <p>Se você sente que pode ter um problema com jogos, procure ajuda profissional. A organização <a href="https://www.jogadoresanonimos.org.br/" target="_blank" rel="noopener noreferrer" style={{color: 'var(--color-primary)'}}>Jogadores Anônimos do Brasil</a> oferece suporte gratuito e confidencial.</p>
+
+                <hr className="section-divider" />
+
+                <h3 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>5. Isenção de Responsabilidade de Ganhos</h3>
+                <p><strong>A UnderPro AI NÃO GARANTE LUCROS.</strong> Nossas análises, sinais e ferramentas são baseados em dados estatísticos e probabilidades matemáticas. O desempenho passado, exibido em nosso dashboard, não é uma garantia de resultados futuros. O mercado de apostas é volátil e imprevisível. Ao utilizar nossos serviços, você reconhece e aceita que é o único responsável por suas decisões de aposta e por quaisquer perdas financeiras que possam ocorrer. Use nossas informações como um recurso de apoio, e não como uma diretriz infalível.</p>
+
+                <hr className="section-divider" />
+
+                <h3 style={{color: 'var(--color-text-primary)', marginBottom: '16px'}}>6. Alterações na Política</h3>
+                <p>Podemos atualizar esta política periodicamente. Notificaremos sobre alterações significativas através de e-mail ou de um aviso em destaque no site. Recomendamos que você revise esta página regularmente.</p>
+
+                <p style={{marginTop: '40px', textAlign: 'center'}}>Última atualização: 20 de agosto de 2025.</p>
+            </div>
+        </>
     );
 }
 
@@ -583,14 +632,6 @@ function RegisterPage() {
             }
         }
     };
-    
-    const handleGoogleLogin = async () => {
-        try {
-            await signInWithRedirect(auth, googleProvider);
-        } catch (error) {
-            setError("Não foi possível iniciar o login com o Google.");
-        }
-    };
 
     if (showVerification) {
         return (
@@ -622,11 +663,6 @@ function RegisterPage() {
                 {error && <p id="error-message" className="message error" style={{display: 'block'}}>{error}</p>}
                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Criar Conta Gratuita</button>
             </form>
-            <div className="divider">OU</div>
-            <button onClick={handleGoogleLogin} className="btn btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" />
-                Cadastrar com Google
-            </button>
             <div className="switch-auth">Já tem uma conta? <Link to="/login">Faça login</Link></div>
         </div>
     );
@@ -668,71 +704,84 @@ function ResetPasswordPage() {
 }
 
 function FreeSignalsPage() {
-    const [tipsData, setTipsData] = useState({ title: 'Carregando dicas...', tips: [] });
+    // 1. O estado agora é mais simples, apenas para guardar os sinais
+    const [signals, setSignals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    // 2. O useEffect foi reescrito para buscar dados do Firestore
     useEffect(() => {
-        const loadTips = async () => {
+        const loadFreeSignals = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const response = await fetch(process.env.PUBLIC_URL + '/dicas-da-semana.txt');
-                if (!response.ok) throw new Error('Arquivo de dicas não encontrado.');
-                const textData = await response.text();
+                const db = getFirestore();
+                const signalsCollection = collection(db, 'signals');
                 
-                const lines = textData.split('\n').map(line => line.trim()).filter(line => line);
-                const titleLine = lines.find(line => line.startsWith('--- DICAS E ANÁLISE')) || 'Dicas da Semana';
-                const title = titleLine.replace('---', '').trim();
-                
-                const tips = [];
-                let currentTip = null;
+                // Esta é a consulta segura: peça ao Firestore apenas os documentos
+                // onde o campo 'isFree' é igual a 'true'.
+                // As regras de segurança que criamos garantirão que esta consulta funcione
+                // para qualquer usuário logado.
+                const q = query(signalsCollection, where("isFree", "==", true));
 
-                lines.forEach(line => {
-                    if (line.startsWith('🎯 PARTIDA:')) {
-                        if (currentTip) tips.push(currentTip);
-                        currentTip = { match: line.replace('🎯 PARTIDA:', '').trim(), details: [] };
-                    } else if (currentTip && line.length > 0 && !line.startsWith('===') && !line.startsWith('---')) {
-                        currentTip.details.push(line);
-                    }
-                });
-                if (currentTip) tips.push(currentTip);
-                setTipsData({ title, tips: tips.slice(0, 2) });
-            } catch (error) {
-                console.error("Erro ao carregar dicas:", error);
-                setTipsData({ title: 'Erro ao Carregar', tips: [] });
+                const querySnapshot = await getDocs(q);
+                
+                // Mapeia os resultados para o formato que o componente espera
+                const freeSignals = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    match: doc.data().match,
+                    analysis: doc.data().analysis, // Usaremos o campo 'analysis' para os detalhes
+                }));
+                
+                setSignals(freeSignals);
+
+            } catch (err) {
+                console.error("Erro ao carregar sinais gratuitos:", err);
+                setError("Não foi possível carregar os sinais. Tente novamente mais tarde.");
+            } finally {
+                setLoading(false);
             }
         };
-        loadTips();
-    }, []);
 
+        loadFreeSignals();
+    }, []); // O array vazio [] significa que este efeito roda apenas uma vez
+
+    // 3. O JSX foi ajustado para renderizar os novos dados e estados
     return (
         <>
-            <section className="page-header"><div className="container">
-                <h1>Sinais Gratuitos da Semana</h1>
-                <p>Análises com alta taxa de assertividade, geradas por nossa IA.</p>
-            </div></section>
+            <section className="page-header">
+                <div className="container">
+                    <h1>Sinais Gratuitos da Semana</h1>
+                    <p>Uma amostra do nosso método analítico, com alta taxa de assertividade.</p>
+                </div>
+            </section>
             <div className="container">
                 <div className="chat-container">
-                    <div className="chat-header">{tipsData.title}</div>
+                    <div className="chat-header">Análises da Rodada</div>
                     <div className="chat-messages">
-                        {tipsData.tips.length > 0 ? (
-                            tipsData.tips.map((tip, index) => (
-                                <div key={index} className="chat-bubble">
-                                    <div className="match-title">{tip.match}</div>
-                                    <div className="match-details" dangerouslySetInnerHTML={{ __html: tip.details.join('<br />') }}></div>
+                        {loading && <p style={{ textAlign: 'center' }}>A carregar sinais...</p>}
+                        {error && <p style={{ textAlign: 'center', color: 'var(--color-error)' }}>{error}</p>}
+                        
+                        {!loading && !error && signals.length > 0 ? (
+                            signals.map(signal => (
+                                <div key={signal.id} className="chat-bubble">
+                                    <div className="match-title">{signal.match}</div>
+                                    {/* Exibimos o campo 'analysis' diretamente */}
+                                    <div className="match-details">{signal.analysis}</div>
                                 </div>
                             ))
-                        ) : ( <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>Nenhuma dica gratuita disponível no momento.</p> )}
+                        ) : (
+                           !loading && <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>Nenhuma dica gratuita disponível no momento.</p>
+                        )}
                     </div>
                     <div className="chat-footer">
-                        <p>Para acesso a todas as análises e ferramentas, <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>torne-se VIP</Link>.</p>
+                        <p>Para acesso a todas as análises e ferramentas, <Link to="/planos" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>torne-se VIP</Link>.</p>
                     </div>
                 </div>
             </div>
         </>
     );
 }
-
-// Dentro do seu arquivo App.js
-
-// Substitua sua função DashboardPage antiga por esta
 
 function DashboardPage() {
     const [allData, setAllData] = useState([]);
@@ -1052,79 +1101,38 @@ function ProfilePage() {
 function VipSignalsPage() {
     const [signals, setSignals] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const parseSignalText = (textData) => {
-            const lines = textData.split('\n').map(line => line.trim()).filter(line => line);
-            const rawSignals = [];
-
-            let currentSignal = null;
-
-            lines.forEach(line => {
-                if (line.startsWith('🎯 PARTIDA:')) {
-                    if (currentSignal) rawSignals.push(currentSignal);
-                    currentSignal = { title: line.replace('🎯 PARTIDA:', '').trim(), content: [] };
-                } else if (currentSignal && !line.startsWith('---') && !line.startsWith('===')) {
-                    currentSignal.content.push(line);
-                }
-            });
-            if (currentSignal) rawSignals.push(currentSignal);
-
-            // Estruturar os dados de cada sinal
-            return rawSignals.map((signal, index) => {
-                const structuredSignal = {
-                    id: index,
-                    match: signal.title,
-                    profile: 'Não especificado',
-                    analysis: '',
-                    warning: '',
-                    betSuggestion: 'Mercado de Menos de 3.5 Gols.',
-                    metrics: {}
-                };
-
-                let readingMetrics = false;
-                signal.content.forEach(line => {
-                    if (line.includes('PERFIL ENCONTRADO:')) {
-                        structuredSignal.profile = line.split(':')[1].trim().replace(/"/g, '');
-                    } else if (line.includes('RESUMO DA ANÁLISE:')) {
-                        structuredSignal.analysis = line.split(':')[1].trim();
-                    } else if (line.includes('PONTO DE ATENÇÃO:')) {
-                        structuredSignal.warning = signal.content.slice(signal.content.indexOf(line) + 1).join(' ');
-                        readingMetrics = false;
-                    } else if (line.includes('MÉTRICAS CHAVE:')) {
-                        readingMetrics = true;
-                    } else if (readingMetrics) {
-                        const parts = line.split(':');
-                        if (parts.length > 1) {
-                            const key = parts[0].replace('-', '').trim();
-                            const value = parseFloat(parts[1]);
-                            if (!isNaN(value)) {
-                                structuredSignal.metrics[key] = value;
-                            }
-                        }
-                    }
-                });
-
-                return structuredSignal;
-            });
-        };
-        
-        const loadTips = async () => {
+        const loadAllSignals = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const response = await fetch(process.env.PUBLIC_URL + '/dicas-da-semana.txt');
-                if (!response.ok) throw new Error('Arquivo de sinais não encontrado.');
-                const textData = await response.text();
+                const db = getFirestore();
                 
-                const parsedSignals = parseSignalText(textData);
-                setSignals(parsedSignals);
-            } catch (error) {
-                console.error("Erro ao carregar sinais VIP:", error);
+                // A consulta é simples: pega todos os documentos da coleção 'signals'.
+                // As Regras de Segurança no Firebase garantirão que apenas usuários VIP
+                // consigam executar esta consulta com sucesso.
+                const q = query(collection(db, 'signals'));
+                const querySnapshot = await getDocs(q);
+
+                const allSignals = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                setSignals(allSignals);
+
+            } catch (err) {
+                console.error("Erro ao carregar sinais VIP:", err);
+                setError("Acesso negado ou erro de conexão. Verifique suas permissões.");
             } finally {
                 setLoading(false);
             }
         };
-        loadTips();
+
+        loadAllSignals();
     }, []);
 
     const handleCopy = (text) => {
@@ -1136,18 +1144,17 @@ function VipSignalsPage() {
         signal.match.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Componente para a barra de progresso
     const MetricBar = ({ label, value, max = 5 }) => {
         const percentage = (value / max) * 100;
         let barColor = 'var(--color-primary)';
-        if (percentage > 66) barColor = '#FF3860'; // Vermelho para valores altos
-        else if (percentage > 33) barColor = '#FFD700'; // Amarelo para médios
+        if (percentage > 66) barColor = '#FF3860';
+        else if (percentage > 33) barColor = '#FFD700';
         
         return (
             <div className="metric-bar">
                 <div className="metric-label">
                     <span>{label}</span>
-                    <span>{value.toFixed(2)}</span>
+                    <span>{(value || 0).toFixed(2)}</span>
                 </div>
                 <div className="progress-container">
                     <div className="progress-bar" style={{ width: `${percentage}%`, backgroundColor: barColor }}></div>
@@ -1156,13 +1163,12 @@ function VipSignalsPage() {
         );
     };
 
-
     return (
         <>
             <section className="page-header">
                 <div className="container">
                     <h1>Sinais VIP</h1>
-                    <p>Acesso completo a todas as análises geradas por nossa IA.</p>
+                    <p>Acesso completo a todas as análises do nosso sistema matemático.</p>
                 </div>
             </section>
             <div className="container" style={{ paddingBottom: '80px' }}>
@@ -1182,9 +1188,10 @@ function VipSignalsPage() {
                     </div>
                 </div>
 
-                {loading ? (
-                    <p style={{ textAlign: 'center' }}>A carregar sinais...</p>
-                ) : (
+                {loading && <p style={{ textAlign: 'center' }}>A carregar sinais...</p>}
+                {error && <p style={{ textAlign: 'center', color: 'var(--color-error)' }}>{error}</p>}
+                
+                {!loading && !error && (
                     <div className="signals-grid">
                         {filteredSignals.map(signal => (
                             <div key={signal.id} className="signal-card">
@@ -1202,9 +1209,12 @@ function VipSignalsPage() {
                                     </div>
                                     <div className="metrics-container">
                                         <h4>Métricas Chave</h4>
-                                        <MetricBar label="xG Total" value={signal.metrics['Expectativa de Gols (xG Total)'] || 0} max={4}/>
-                                        <MetricBar label="Pot. Ofensivo" value={signal.metrics['Potencial Ofensivo Combinado (PO)'] || 0} max={5}/>
-                                        <MetricBar label="Média Gols Sofridos" value={signal.metrics['Média de Gols Sofridos Combinada (MGS)'] || 0} max={4}/>
+                                        {/* O operador '|| {}' previne erros caso 'metrics' não exista */}
+                                        <MetricBar label="xG Total" value={(signal.metrics || {})['Expectativa de Gols (xG Total)']} max={4}/>
+                                        <MetricBar label="Pot. Ofensivo" value={(signal.metrics || {})['Potencial Ofensivo Combinado (PO)']} max={5}/>
+                                        <MetricBar label="Média Gols Sofridos" value={(signal.metrics || {})['Média de Gols Sofridos Combinada (MGS)']} max={4}/>
+                                        {/* Adicionado o novo campo de métrica do seu arquivo de texto */}
+                                        <MetricBar label="Tendência de Gols" value={(signal.metrics || {})['Tendência Geral de Gols (APIA)']} max={4}/>
                                     </div>
                                 </div>
                                 <div className="card-footer">
@@ -1222,11 +1232,15 @@ function VipSignalsPage() {
                         ))}
                     </div>
                 )}
-                 { !loading && filteredSignals.length === 0 && <p style={{textAlign: 'center', marginTop: '40px'}}>Nenhum sinal encontrado para a sua pesquisa.</p> }
+                
+                {!loading && !error && filteredSignals.length === 0 && 
+                    <p style={{textAlign: 'center', marginTop: '40px'}}>Nenhum sinal encontrado para a sua pesquisa.</p>
+                }
             </div>
         </>
     );
 }
+
 function PlansPage() {
     return (
         <>
@@ -1265,9 +1279,10 @@ function BankrollManagerPage() {
     });
     const [odd, setOdd] = useState(1.24);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); // Novo estado para erros
+    const [error, setError] = useState(null);
     const fileInputRef = useRef(null);
 
+    // ... (todas as suas funções como useEffect, saveStateToFirestore, etc. permanecem inalteradas aqui)
     useEffect(() => {
         const loadStateFromFirestore = async () => {
             if (!user) {
@@ -1276,26 +1291,22 @@ function BankrollManagerPage() {
             }
 
             setLoading(true);
-            setError(null); // Reseta o erro a cada nova tentativa
+            setError(null);
             const docRef = doc(db, "bankrollManagement", user.uid);
             
             try {
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Usuário existente: carrega os dados
                     const loadedState = docSnap.data();
                     loadedState.pendingBet = null;
                     setAppState(loadedState);
                 } else {
-                    // NOVO USUÁRIO: A conta não existe, então apenas prepara o estado padrão.
-                    // Isso é o comportamento esperado, não um erro.
                     setAppState({
                         bankroll: 100.00, isSorosActive: false, sorosStake: 0, history: [], pendingBet: null
                     });
                 }
             } catch (err) {
-                // ERRO REAL: Acontece se houver falha de conexão ou permissão.
                 console.error("Erro ao carregar dados do Firestore:", err);
                 setError("Não foi possível carregar seus dados. Verifique sua conexão e as regras de segurança do Firebase.");
             } finally {
@@ -1306,7 +1317,6 @@ function BankrollManagerPage() {
         loadStateFromFirestore();
     }, [user]);
 
-    // ... (O restante de todas as outras funções: saveStateToFirestore, getNextStake, handleAddBet, resolveBet, etc., continuam EXATAMENTE IGUAIS) ...
     const saveStateToFirestore = async (newState) => {
         if (!user) return;
         const stateToSave = { ...newState, pendingBet: null };
@@ -1328,6 +1338,8 @@ function BankrollManagerPage() {
             return { stake: appState.sorosStake, type: 'Soros Nv. 1' };
         }
         if (isNaN(currentOdd)) return { stake: 0, type: 'Inválido' };
+        // A lógica aqui já reflete as regras que serão explicadas no tutorial
+        if (currentOdd < 1.24) return { stake: 0, type: 'Kelly (EV-)' };
         if (currentOdd <= ODD_THRESHOLD) {
             const stake = appState.bankroll * FIXED_STAKE_PERCENTAGE;
             return { stake, type: `Stake Fixa (${(FIXED_STAKE_PERCENTAGE * 100).toFixed(1)}%)` };
@@ -1344,7 +1356,7 @@ function BankrollManagerPage() {
 
     const handleAddBet = () => {
         if (isNaN(odd) || odd <= 1) { alert('Insira uma odd válida.'); return; }
-        if (nextBetInfo.stake <= 0) { alert('A aposta não tem EV+. Nenhuma aposta será registrada.'); return; }
+        if (nextBetInfo.stake <= 0) { alert('A odd inserida tem EV negativo ou nulo. Nenhuma aposta será registrada.'); return; }
         const newBet = { id: Date.now(), type: nextBetInfo.type, stake: nextBetInfo.stake, odd: odd };
         setAppState(prev => ({ ...prev, pendingBet: newBet }));
     };
@@ -1412,7 +1424,6 @@ function BankrollManagerPage() {
         event.target.value = '';
     };
 
-    // Renderização condicional da UI
     const renderContent = () => {
         if (loading) {
             return <div className="bm-card" style={{textAlign: 'center', padding: '50px 0'}}>Carregando seus dados...</div>;
@@ -1423,7 +1434,7 @@ function BankrollManagerPage() {
         return (
             <>
                 <div className="bm-grid-container">
-                     {/* ... Controles, Resumo, etc. ... */}
+                     {/* ... (O restante do JSX da página permanece o mesmo) ... */}
                      <div className="bm-card">
                         <h2 className="bm-card-title">Controles</h2>
                         <div className="form-group">
@@ -1514,26 +1525,47 @@ function BankrollManagerPage() {
                 </div>
             </section>
             <div className="container" style={{maxWidth: '1000px', margin: '0 auto 80px auto'}}>
-                <details className="bm-explanation-box">
+                {/* O TUTORIAL PRINCIPAL FOI ATUALIZADO AQUI */}
+                <details className="bm-explanation-box" open> {/* Adicionado 'open' para vir aberto por padrão */}
                     <summary>
                         <h3>Como Usar a Gestão de Banca? (Clique para expandir)</h3>
                         <FaChevronDown className="chevron-icon"/>
                     </summary>
                     <div className="explanation-content">
-                        <h4>O Método Híbrido</h4>
-                        <p>Nossa gestão combina duas estratégias para maximizar lucros e proteger sua banca:</p>
+                        <h4>O Método Híbrido: A Estratégia Por Trás dos Números</h4>
+                        <p>Nossa gestão é projetada para maximizar lucros e proteger sua banca, adaptando-se ao valor de cada odd. Entenda as regras:</p>
                         <ul>
-                            <li><strong>Stake Fixa (Odds ≤ 1.27):</strong> Para jogos de altíssima probabilidade, usamos uma stake fixa de 5% sobre a banca para garantir consistência.</li>
-                            <li><strong>Critério de Kelly (Odds > 1.27):</strong> Para odds de maior valor, a ferramenta calcula a porcentagem ideal da banca a ser apostada, baseada no Valor Esperado Positivo (EV+).</li>
-                            <li><strong>Método Soros:</strong> Após um "Green", a ferramenta entra em "Modo Soros", onde a próxima stake será o valor da aposta anterior somado ao lucro, potencializando ganhos em sequências de vitórias. Após um "Red" ou um "Green" em modo Soros, o ciclo volta ao normal.</li>
+                            <li><strong>NUNCA APOSTE EM ODDS ABAIXO DE 1.24:</strong> Este é o ponto de equilíbrio matemático do nosso método. Qualquer odd abaixo disso apresenta Valor Esperado (EV) negativo, ou seja, <strong>prejuízo a longo prazo</strong>. A ferramenta irá bloquear a aposta.</li>
+                            <li><strong>Stake Fixa (Odds entre 1.24 e 1.27):</strong> Neste intervalo, o método já é matematicamente lucrativo, mas o retorno é muito baixo. Consideramos este um "mercado lento", cujo rendimento anual pode não compensar o desgaste emocional das apostas para a maioria. Por isso, a ferramenta usa uma stake conservadora de <strong>5% da banca</strong>. É uma opção para o investidor mais "agoniado", mas recomendamos fortemente esperar por odds melhores ao vivo (veja o guia abaixo).</li>
+                            <li><strong>Critério de Kelly (Odds ≥ 1.28):</strong> A partir daqui, o jogo muda. O EV+ torna-se considerável e o potencial de lucro é alto. A ferramenta utiliza o <strong>Critério de Kelly</strong> para calcular a porcentagem ideal da banca a ser apostada, maximizando os ganhos de forma segura. <strong>Indicamos fortemente a entrada em todos os sinais com odds a partir de 1.28.</strong></li>
+                            <li><strong>Método Soros:</strong> Após um "Green", a ferramenta entra em "Modo Soros", onde a próxima stake será o valor da aposta anterior somado ao lucro. Isso potencializa ganhos em sequências de vitórias e é um pilar do nosso crescimento exponencial.</li>
                         </ul>
                         <h4>Passo a Passo da Ferramenta</h4>
                         <ol>
                             <li><strong>Banca e Odd:</strong> Confira sua banca e insira a odd da aposta.</li>
-                            <li><strong>Verifique a Stake:</strong> O quadro "Próxima Entrada" mostrará o valor recomendado.</li>
+                            <li><strong>Verifique a Stake:</strong> O quadro "Próxima Entrada" mostrará o valor e o método recomendado.</li>
                             <li><strong>Registre a Aposta:</strong> Clique em "Registrar". A aposta ficará pendente.</li>
                             <li><strong>Resolva o Resultado:</strong> Após o jogo, clique em "Green" ou "Red" para salvar o resultado.</li>
                         </ol>
+                    </div>
+                </details>
+
+                <details className="bm-explanation-box">
+                    <summary>
+                        <h3>Guia VIP: Maximizando Lucros com Odds ao Vivo (Clique)</h3>
+                        <FaChevronDown className="chevron-icon"/>
+                    </summary>
+                    <div className="explanation-content">
+                        <h4>A Técnica da Paciência Estratégica</h4>
+                        <p>Como visto acima, odds baixas (abaixo de 1.28) têm pouco retorno. A melhor forma de lucrar com esses sinais é esperar o jogo começar e a odd subir. Siga os passos:</p>
+                        <ol>
+                            <li><strong>Receba o Sinal:</strong> Identifique o sinal de Under 3.5 que você recebeu em nosso canal VIP.</li>
+                            <li><strong>Monitore, Não Aja:</strong> Em vez de apostar imediatamente (pré-jogo), adicione o jogo aos seus favoritos na casa de apostas e assista aos primeiros 15-25 minutos.</li>
+                            <li><strong>Aguarde o Gatilho:</strong> O "gatilho" ideal é um gol no primeiro tempo. Isso fará com que a odd ao vivo para "Menos de 3.5 Gols" suba consideravelmente.</li>
+                            <li><strong>Analise e Aja:</strong> Verifique a nova odd. Se ela atingiu um patamar de alto valor (ex: > 1.40), insira este novo valor no campo "Odd da Aposta" aqui na ferramenta. O sistema calculará a stake ideal (usando o Critério de Kelly) para essa odd de ouro.</li>
+                            <li><strong>Registre e Torça:</strong> Faça a aposta com a stake calculada e registre-a na ferramenta.</li>
+                        </ol>
+                        <p>Essa paciência transforma uma aposta de EV+ (Valor Esperado Positivo) em uma aposta de <strong>EV++ (Valor Esperado Altamente Positivo)</strong>. É uma das técnicas mais poderosas para acelerar o crescimento da sua banca de forma segura e calculada.</p>
                     </div>
                 </details>
                 
@@ -1559,6 +1591,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/planos" element={<PlansPage />} />
 	    <Route path="/gestao-de-banca" element={<VipRoute><BankrollManagerPage /></VipRoute>} />
+            <Route path="/politica-de-privacidade" element={<PrivacyPolicyPage />} />
             {/* Rotas Protegidas */}
             <Route path="/perfil" element={<AuthenticatedRoute><ProfilePage /></AuthenticatedRoute>} />
             <Route path="/sinais-vip" element={<VipRoute><VipSignalsPage /></VipRoute>} />

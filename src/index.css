@@ -356,15 +356,6 @@ main.auth-main {
 .message.error { color: var(--color-error); }
 .message.success { color: var(--color-success); }
 
-.divider { display: flex; align-items: center; text-align: center; color: var(--color-text-secondary); margin: 24px 0; }
-.divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--color-border); }
-.divider:not(:empty)::before { margin-right: .25em; }
-.divider:not(:empty)::after { margin-left: .25em; }
-
-.btn-google { background-color: #fff; color: #333; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
-.btn-google:hover { background-color: #f2f2f2; }
-.btn-google img { width: 20px; height: 20px; }
-
 .forgot-password { text-align: right; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px; }
 .forgot-password a { color: var(--color-text-secondary); text-decoration: none; }
 .forgot-password a:hover { color: var(--color-primary); }
@@ -1444,13 +1435,12 @@ main.auth-main {
 /* 1. O Container Externo (O Quadro Visual) */
 .chart-container {
     background-color: var(--color-surface);
-    padding: 32px; /* O padding fica aqui */
+    padding: 32px;
     border-radius: var(--border-radius);
     border: 1px solid var(--color-border);
     height: 60vh;
     min-height: 400px;
     position: relative;
-    /* Removemos o overflow daqui */
 }
 
 /* 2. O Wrapper de Rolagem (Fica DENTRO do quadro) */
