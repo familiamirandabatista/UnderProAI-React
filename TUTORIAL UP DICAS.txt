@@ -1,0 +1,7 @@
+//Para upar as dicas da semana você deve pegar as dicas no formato gerado pelo autoanalyser postar no arquivo dicas-da-semana.txt
+
+//Depois você deve abrir o gitbash e executar o comando "node uploadSignals.js"
+
+
+
+//OBS: SE TIVER QUE TROCAR A CHAVE API OU O PROJETO DO FIREBASE, NOVA CHAVE PRIVADA DEVE SER GERADA DENTRO DE CONTAS DE SERVIÇO E SER SUBSTITUIDA NO ARQUIVO "serviceAccountKey.json"

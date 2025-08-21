@@ -719,7 +719,7 @@ function ResetPasswordPage() {
 
 /* CÓDIGO NOVO - FreeSignalsPage */
 function FreeSignalsPage() {
-    const { userProfile } = useAuth(); // ADICIONADO: Pega o perfil do usuário
+    const { userProfile } = useAuth();
     const [signals, setSignals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -729,7 +729,7 @@ function FreeSignalsPage() {
             setLoading(true);
             setError(null);
             try {
-                const db = getFirestore();
+                // A linha "const db = getFirestore();" foi REMOVIDA daqui.
                 const signalsCollection = collection(db, 'signals');
                 const q = query(signalsCollection, where("isFree", "==", true));
 
@@ -781,8 +781,6 @@ function FreeSignalsPage() {
                         )}
                     </div>
 
-                    {/* --- ALTERAÇÃO APLICADA AQUI --- */}
-                    {/* Só mostra o rodapé se o usuário NÃO for VIP */}
                     {!userProfile?.isVip && (
                          <div className="chat-footer">
                             <p>Para acesso a todas as análises e ferramentas, <Link to="/planos" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>torne-se VIP</Link>.</p>
@@ -1125,11 +1123,7 @@ function VipSignalsPage() {
             setLoading(true);
             setError(null);
             try {
-                const db = getFirestore();
-                
-                // A consulta é simples: pega todos os documentos da coleção 'signals'.
-                // As Regras de Segurança no Firebase garantirão que apenas usuários VIP
-                // consigam executar esta consulta com sucesso.
+                // A linha "const db = getFirestore();" foi REMOVIDA daqui.
                 const q = query(collection(db, 'signals'));
                 const querySnapshot = await getDocs(q);
 
@@ -1225,11 +1219,9 @@ function VipSignalsPage() {
                                     </div>
                                     <div className="metrics-container">
                                         <h4>Métricas Chave</h4>
-                                        {/* O operador '|| {}' previne erros caso 'metrics' não exista */}
                                         <MetricBar label="xG Total" value={(signal.metrics || {})['Expectativa de Gols (xG Total)']} max={4}/>
                                         <MetricBar label="Pot. Ofensivo" value={(signal.metrics || {})['Potencial Ofensivo Combinado (PO)']} max={5}/>
                                         <MetricBar label="Média Gols Sofridos" value={(signal.metrics || {})['Média de Gols Sofridos Combinada (MGS)']} max={4}/>
-                                        {/* Adicionado o novo campo de métrica do seu arquivo de texto */}
                                         <MetricBar label="Tendência de Gols" value={(signal.metrics || {})['Tendência Geral de Gols (APIA)']} max={4}/>
                                     </div>
                                 </div>

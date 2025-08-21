@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: "underproai-react.firebaseapp.com",
-  projectId: "underproai-react",
-  storageBucket: "underproai-react.appspot.com",
-  messagingSenderId: "458703871274",
-  appId: "1:458703871274:web:6276a9587c28990e8d5253"
+  apiKey: "AIzaSyAxKlUFMVhagG4aZvlyzHw6ll40rYo63FQ",
+  authDomain: "underproai-final.firebaseapp.com",
+  projectId: "underproai-final",
+  storageBucket: "underproai-final.firebasestorage.app",
+  messagingSenderId: "421575148404",
+  appId: "1:421575148404:web:e46a502f95dce7566d2221"
 };
 
 const app = initializeApp(firebaseConfig);
